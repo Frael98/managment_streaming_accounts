@@ -8,7 +8,7 @@ class User extends Entity {
   final String lastname;
   final String user;
   final String email;
-  final int edad;
+  final int? age;
   final String password;
 
   User({
@@ -16,7 +16,7 @@ class User extends Entity {
     required this.lastname,
     required this.user,
     required this.email,
-    required this.edad,
+    this.age,
     required this.password
   });
 
@@ -24,11 +24,18 @@ class User extends Entity {
   Map<String, dynamic> toMap() {
     return {
       'user': user,
-      'names': name,
+      'name': name,
       'lastname' : lastname,
-      'edad': edad,
+      'age': age,
       'email': email,
       'password': password
     };
+  }
+
+  // Implement toString to make it easier to see information about
+  // each dog when using the print statement.
+  @override
+  String toString() {
+    return 'Dog{id: $idUser name: $name, age: $age}';
   }
 }

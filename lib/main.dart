@@ -1,6 +1,9 @@
+import 'package:f_managment_stream_accounts/db/database.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  initDataBase();
   runApp(const MyApp());
 }
 
