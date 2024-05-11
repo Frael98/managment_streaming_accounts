@@ -15,5 +15,20 @@ class Platform extends Entity {
   Int64? idPlatform;
   String nameService;
 
-  Platform({required this.nameService});
+  Platform({this.idPlatform, required this.nameService});
+
+  Map<String, dynamic> toMap() {
+    // alias: toJson
+    return {
+      'idPlatform': idPlatform,
+      'nameService': nameService,
+    };
+  }
+
+  factory Platform.fromMap(Map<String, dynamic> map) {
+    return Platform(
+        idPlatform: map['idPlatform'],
+        nameService: map['nameService'],
+        );
+  }
 }
