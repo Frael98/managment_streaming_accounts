@@ -1,0 +1,136 @@
+import 'dart:developer';
+
+import 'package:f_managment_stream_accounts/controllers/user_controller.dart';
+import 'package:f_managment_stream_accounts/forms/login.dart';
+import 'package:f_managment_stream_accounts/models/user.dart';
+import 'package:flutter/material.dart';
+import 'package:toast/toast.dart';
+
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _userController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Registro de Usuario'),
+        ),
+        body: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextField(
+                    controller: _firstNameController,
+                    decoration: const InputDecoration(labelText: 'Nombres'),
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: _lastNameController,
+                    decoration: const InputDecoration(labelText: 'Apellidos'),
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: _ageController,
+                    decoration: const InputDecoration(labelText: 'Edad'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: _emailController,
+                    decoration:
+                        const InputDecoration(labelText: 'Correo Electrónico'),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: _userController,
+                    decoration: const InputDecoration(labelText: 'Usuario'),
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(labelText: 'Contraseña'),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      registerUser(context);
+                    },
+                    child: const Text('Registrar'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ));
+  }
+
+  /// Limpiar campos
+  void limpiarTexts() {
+    _userController.text = '';
+    _firstNameController.text = '';
+    _passwordController.text = '';
+    _lastNameController.text = '';
+    _ageController.text = '';
+    _emailController.text = '';
+  }
+
+  void registerUser(BuildContext context) async {
+    String user = _userController.text.trim();
+    String name = _firstNameController.text.trim();
+    String lastname = _lastNameController.text.trim();
+    int age = int.tryParse(_ageController.text) ?? 0;
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    User newUser = User(
+        name: name,
+        lastname: lastname,
+        user: user,
+        email: email,
+        age: age,
+        password: password);
+
+    try {
+
+      await UserController.addUser(newUser);
+      limpiarTexts();
+      showToast('Ud ha sido registrado correctamente!');
+
+      // Redirige a la pantalla de perfil del usuario después del registro
+       // ignore: use_build_context_synchronously
+       Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const LogIn(
+                  title: '',
+                )),
+      );
+    } catch (e) {
+      log('Error al registrar al usuario: $e');
+      showToast('Error al registrar al usuario: $e');
+    }
+  }
+
+  //Muestra mensajes
+  void showToast(String message) {
+    Toast.show(message, duration: Toast.lengthLong, gravity: Toast.bottom);
+  }
+}

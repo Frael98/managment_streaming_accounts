@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:f_managment_stream_accounts/forms/client_form.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -30,14 +31,14 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              title: const Text('Resurantes Cerca'),
+              title: const Text('Clientes'),
               onTap: () {
-                /* Navigator.push(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const MapPage(),
+                    builder: (context) => const ClientFormScreen(),
                   ),
-                ); */
+                );
               },
             ),
             ListTile(

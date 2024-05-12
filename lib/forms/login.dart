@@ -1,3 +1,9 @@
+import 'dart:developer';
+
+import 'package:f_managment_stream_accounts/controllers/user_controller.dart';
+import 'package:f_managment_stream_accounts/forms/home.dart';
+import 'package:f_managment_stream_accounts/forms/sign_up.dart';
+import 'package:f_managment_stream_accounts/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 
@@ -19,10 +25,9 @@ class LogInState extends State<LogIn> {
   //Estado Inicio
   @override
   void initState() {
-    super.initState();
-
     userController = TextEditingController();
     passwordController = TextEditingController();
+    super.initState();
   }
 
   @override
@@ -55,39 +60,42 @@ class LogInState extends State<LogIn> {
     passwordController.text = '';
   }
 
-// Logeo
+  /// Logeo
   void logIn() async {
-    
-    var user = '', correo = '';
-
-    /* if (datos != null) {
-      user = datos.get('usuario');
-      correo = datos.get('correo');
-
-      
-    } else {
-      showToast('action', '', 'Usuario no existe');
-      return;
-    }
 
     if (!isValid()) {
       showToast('action', '', 'Por favor llene los campos');
       return;
-    } */
+    }
+
+    String user = userController.text;
+    String pass = passwordController.text;
+
+    var datos = await UserController.logIn(User.validation(user, pass));
+    var name = '', email = '';
+
+    if (datos != null) {
+      log(datos.first.toString());
+      name = datos.first.name!;
+      email = datos.first.email!;
+    } else {
+      showToast('action', '', 'Usuario no existe');
+      return;
+    }
 
     showToast(
         'Iniciar Sesion',
         ' ${userController.text.trim()} pass: ${passwordController.text.trim()}',
         ' Acceso concedido');
     // ignore: use_build_context_synchronously
-    /* Navigator.push(
+    Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => HomeScreen(
-            usuario: user,
-            correo: correo,
+            usuario: name,
+            correo: email,
           ),
-        )); */
+        ));
     clearTexts();
   }
 
@@ -127,11 +135,10 @@ class LogInState extends State<LogIn> {
           ElevatedButton(onPressed: logIn, child: const Text('Iniciar Sesion')),
           ElevatedButton(
               onPressed: () {
-                /* Navigator.push(
+                Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SignUpScreen()
-                    )); */
+                        builder: (context) => const SignUpScreen()));
               },
               child: const Text('Registrarse')),
         ],
