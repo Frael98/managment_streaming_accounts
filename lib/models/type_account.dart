@@ -1,4 +1,4 @@
-
+/* Indica el tipo de cuenta creada */
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 
 class TypeAccount extends Entity {
@@ -12,8 +12,8 @@ class TypeAccount extends Entity {
   Map<String, dynamic> toMap() {
     // alias: toJson
     return {
-      'idTypeAccount': idTypeAccount,
-      'nameTypeAccount': nameTypeAccount,
+      'id_type_account': idTypeAccount,
+      'name_type_account': nameTypeAccount,
     };
   }
 

@@ -3,21 +3,33 @@ import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 
 class User extends Entity {
   int? idUser;
-  final String name;
-  final String lastname;
-  final String user;
-  final String email;
-  final int? age;
-  final String password;
+  String? name;
+  String? lastname;
+  String? user;
+  String? email;
+  int? age;
+  String? password;
 
-  User(
-      {this.idUser,
-      required this.name,
-      required this.lastname,
-      required this.user,
-      required this.email,
-      this.age,
-      required this.password});
+  User({
+    this.idUser,
+    required this.name,
+    required this.lastname,
+    required this.user,
+    required this.email,
+    this.age,
+    required this.password,
+    String? state,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? deletedAt,
+  }) : super(
+            state: state,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt);
+
+  User.validation(this.user, this.password);
+  User.audit({this.idUser, state, createdAt, updatedAt, deletedAt});
 
   // Método para convertir la instancia de la clase a un mapa
   Map<String, dynamic> toMap() {
@@ -28,24 +40,38 @@ class User extends Entity {
       'lastname': lastname,
       'age': age,
       'email': email,
-      'password': password
+      'password': password,
+      'state': state,
+      'created_at': DateTime.now().toIso8601String(),
+      'updated_at': updatedAt,
+      'deleted_at': deletedAt,
     };
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-        idUser: map['iduser'],
-        name: map['name'],
-        lastname: map['lastname'],
-        user: map['user'],
-        email: map['email'],
-        password: map['password']);
+        idUser: map['IDUSER'],
+        name: map['NAME'],
+        lastname: map['LASTNAME'],
+        user: map['USER'],
+        email: map['EMAIL'],
+        age: map['AGE'],
+        password: map['PASSWORD']);
+  }
+
+  factory User.fromMapAudit(Map<String, dynamic> map) {
+    return User.audit(
+        idUser: map['IDUSER'],
+        state: map['STATE'],
+        createdAt: map['CREATED_AT'],
+        updatedAt: map['UPDATED_AT'],
+        deletedAt: map['DELETED_AT']);
   }
 
   // Implement toString to make it easier to see information about
-  // each dog when using the print statement.
+  // each User when using the print statement.
   @override
   String toString() {
-    return 'Dog{id: $idUser name: $name, age: $age}';
+    return 'User {id: $idUser name: $name, user: $user, lastname: $lastname, email: $email, password: $password, created_at: $createdAt}';
   }
 }

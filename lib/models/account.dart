@@ -1,15 +1,12 @@
 /* 
   La cuenta que se crea en la plataforma   
  */
-
-import 'dart:ffi';
-
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:f_managment_stream_accounts/models/type_account.dart';
 
 class Account extends Entity {
-  Int64? idAccount;
+  int? idAccount;
   String email;
   String password;
   DateTime registerDate;
@@ -34,22 +31,22 @@ class Account extends Entity {
       'email': email,
       'password': password,
       'registerDate': registerDate,
-      'expireDate': expireDate,
+      'expire_date': expireDate,
       'platform': platform,
-      'typeAccount': typeAccount,
-      'perfilQuantity': perfilQuantity
+      'type_account': typeAccount,
+      'perfil_quantity': perfilQuantity
     };
   }
 
   factory Account.fromMap(Map<String, dynamic> map) {
     return Account(
-        idAccount: map['idAccount'],
-        email: map['email'],
-        password: map['password'],
-        registerDate: map['registerDate'],
-        expireDate: map['expireDate'],
-        platform: map['platform'],
-        typeAccount: map['typeAccount'],
-        perfilQuantity: map['perfilQuantity']);
+        idAccount: map['ID_ACCOUNT'],
+        email: map['EMAIL'],
+        password: map['PASSWORD'],
+        registerDate: map['REGISTER_DATE'],
+        expireDate: map['EXPIRE_DATE'],
+        platform: map['PLATFORM'],
+        typeAccount: map['TYPE_ACCOUNT'],
+        perfilQuantity: map['PERFIL_QUANTITY']);
   }
 }

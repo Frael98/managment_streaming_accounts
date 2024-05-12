@@ -6,13 +6,11 @@
   Amazon Prime
   HBO
  */
-import 'dart:ffi';
-
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 
 class Platform extends Entity {
   
-  Int64? idPlatform;
+  int? idPlatform;
   String nameService;
 
   Platform({this.idPlatform, required this.nameService});
