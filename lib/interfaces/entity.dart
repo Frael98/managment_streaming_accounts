@@ -3,4 +3,6 @@ abstract class Entity {
   DateTime? createdAt;
   DateTime? updatedAt;
   DateTime? deletedAt;
+
+  Entity({this.state, this.createdAt, this.updatedAt, this.deletedAt});
 }
