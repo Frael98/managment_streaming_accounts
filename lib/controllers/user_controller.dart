@@ -31,7 +31,7 @@ class UserController {
         .delete('USER', where: 'idUser = ?', whereArgs: [user.idUser]);
   }
 
-  ///Listar
+  ///Listar usuarios
   static Future<List<User>?> getUsers() async {
     final dbConnection = await connectToDb();
 
@@ -42,6 +42,24 @@ class UserController {
       return null;
     }
 
+    //return List.generate(data.length, (index) => User.fromMap(data[index]));
+    return data.map((user) => User.fromMap(user)).toList();
+  }
+
+  /// Iniciar Sesion
+  static Future<List<User>?> logIn(User user) async {
+    final dbConnection = await connectToDb();
+
+    final data = await dbConnection.query('USER',
+        where: 'USER = ? AND PASSWORD = ?',
+        whereArgs: [user.user, user.password]);
+
+    if (data.isEmpty) {
+      log('No existen registros');
+      return null;
+    }
+
+    log(data.first.toString());
     //return List.generate(data.length, (index) => User.fromMap(data[index]));
     return data.map((user) => User.fromMap(user)).toList();
   }
