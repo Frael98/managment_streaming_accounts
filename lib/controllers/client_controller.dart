@@ -18,17 +18,17 @@ class ClientController {
     final dbConnection = await connectToDb();
 
     return await dbConnection.update('CLIENT', client.toMap(),
-        where: 'idClient = ?',
+        where: 'ID_CLIENT = ?',
         whereArgs: [client.idClient],
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   ///Eliminar
-  static Future<int> deleteClient(Client client) async {
+  static Future<int> deleteClient(int? idClient) async {
     final dbConnection = await connectToDb();
 
     return await dbConnection
-        .delete('CLIENT', where: 'idClient = ?', whereArgs: [client.idClient]);
+        .delete('CLIENT', where: 'ID_CLIENT = ?', whereArgs: [idClient]);
   }
 
   ///Listar
@@ -44,5 +44,18 @@ class ClientController {
 
     //return List.generate(data.length, (index) => Client.fromMap(data[index]));
     return data.map((client) => Client.fromMap(client)).toList();
+  }
+
+  ///Obtener solo un cliente
+  static Future<Client?> getClient(int? idClient) async {
+    final dbConnection = await connectToDb();
+
+    final data = await dbConnection.query('CLIENT', where: 'ID_CLIENT = ?', whereArgs: [idClient]);
+
+    if (data.isEmpty) {
+      log('No existen registros');
+      return null;
+    }
+    return Client.fromMap(data.first);
   }
 }
