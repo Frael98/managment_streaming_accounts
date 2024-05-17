@@ -14,13 +14,12 @@ class ClientListView extends StatelessWidget {
           title: const Text('Clientes'),
         ),
         floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.plus_one),
-          onPressed: () => onClientForm(context)
-        ),
+            child: const Icon(Icons.plus_one),
+            onPressed: () => onClientForm(context)),
         body: FutureBuilder(
             future: getClients(context),
             builder: (context, snapshot) {
-              if(snapshot.connectionState == ConnectionState.done){
+              if (snapshot.connectionState == ConnectionState.done) {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -31,8 +30,7 @@ class ClientListView extends StatelessWidget {
                     ],
                   ),
                 );
-              }
-              else {
+              } else {
                 return const Center(child: CircularProgressIndicator());
               }
             }));
@@ -55,23 +53,22 @@ class ClientListView extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: ListTile(
         leading: AspectRatio(
-          aspectRatio: 1,
-          child: Container(
-            color: Colors.amber,
-          ),
+          aspectRatio: 0.9,
+          child: Image.asset('assets/ichi.jpg'),
         ),
         title: Text(client.nameClient!,
             style: Theme.of(context).textTheme.titleLarge),
-        trailing: Text('${client.email!} '),
+        trailing: Text('${client.numberPhone!} '),
+        onTap: () => onClientForm(context, idClient: client.idClient),
       ),
     );
   }
 
-  void onClientForm(BuildContext context) {
-    Navigator.push(
+  void onClientForm(BuildContext context, {int? idClient}) {
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const ClientFormScreen(),
+        builder: (context) => ClientFormScreen(idClient ?? 0),
       ),
     );
   }
