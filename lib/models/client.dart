@@ -13,7 +13,10 @@ class Client extends Entity {
       required this.nameClient,
       this.numberPhone,
       this.direction,
-      this.email});
+      this.email,
+      createdAt,
+      updatedAt,
+      deletedAt});
 
   Client.audit({this.idClient, state, createdAt, updatedAt, deletedAt});
 
@@ -27,7 +30,7 @@ class Client extends Entity {
       'direction': direction,
       'email': email,
       'state': 'A',
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': createdAt,
       'updated_at': updatedAt,
       'deleted_at': deletedAt
     };
@@ -39,7 +42,10 @@ class Client extends Entity {
         nameClient: map['NAME_CLIENT'],
         numberPhone: map['NUMBER_PHONE'],
         direction: map['DIRECTION'],
-        email: map['EMAIL']);
+        email: map['EMAIL'],
+        createdAt: map['CREATED_AT'],
+        updatedAt: map['UPDATED_AT'],
+        deletedAt: map['DELETED_AT']);
   }
 
   factory Client.fromMapAudit(Map<String, dynamic> map) {
