@@ -11,7 +11,7 @@ void initDataBase() {
 /// Conectamos a la base MSA, se crea si no existe
 Future<Database> connectToDb() async {
   // Open the database and store the reference.
-  final database = openDatabase(join(await getDatabasesPath(), 'MSA.db'));
+  final database = openDatabase(join(await getDatabasesPath(), 'MSA.db'), version: 1);
 
   return database;
 }
