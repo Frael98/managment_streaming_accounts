@@ -1,7 +1,6 @@
 import 'dart:developer';
-
 import 'package:f_managment_stream_accounts/controllers/client_controller.dart';
-import 'package:f_managment_stream_accounts/forms/cliente/cliente_list.dart';
+import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
@@ -26,12 +25,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
 
   @override
   void initState() {
-    //log("no es null");
-    /* log(widget.cliente!.toString());
-      _nameClientController.text = widget.cliente!.nameClient!;
-      _numberPhoneController.text = widget.cliente!.numberPhone!;
-      _directionController.text = widget.cliente!.direction!;
-      _emailController.text = widget.cliente!.email!; */
     obtenerClienteAsync();
     super.initState();
   }
@@ -42,59 +35,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       appBar: AppBar(
         title: const Text('Clientes'),
       ),
-      body: /* ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextField(
-                  controller: _nameClientController,
-                  decoration: const InputDecoration(labelText: 'Nombres'),
-                ),
-                const SizedBox(height: 16.0),
-                TextField(
-                  controller: _numberPhoneController,
-                  decoration:
-                      const InputDecoration(labelText: 'Número Celular'),
-                ),
-                const SizedBox(height: 16.0),
-                TextField(
-                  controller: _directionController,
-                  decoration: const InputDecoration(labelText: 'Dirección'),
-                ),
-                const SizedBox(height: 16.0),
-                TextField(
-                  controller: _emailController,
-                  decoration:
-                      const InputDecoration(labelText: 'Correo Electrónico'),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16.0),
-                ElevatedButton(
-                  onPressed: () {
-                    if (idCliente != 0) {
-                      updateClient(context);
-                    } else {
-                      log(idCliente.toString());
-                      registerClient(context);
-                    }
-                  },
-                  child: const Text('Guardar Cliente'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    deleteClient(context);
-                  },
-                  child: const Text('Eliminar cliente'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ), */
-          Form(
+      body: Form(
         key: key,
         child: Column(
           children: [
@@ -141,6 +82,9 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
               ),
             ),
             ElevatedButton(
+              style: const ButtonStyle(
+                backgroundColor: MaterialStatePropertyAll(Colors.red),
+              ),
               onPressed: () {
                 //deleteClient(context);
                 showDialogMessage(context,
@@ -226,12 +170,6 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         direction: direction,
         email: email,
         updatedAt: DateTime.now().toIso8601String());
-
-    /* widget.cliente!.nameClient = _nameClientController.text;
-    widget.cliente!.numberPhone = _numberPhoneController.text;
-    widget.cliente!.direction = _directionController.text;
-    widget.cliente!.email = _emailController.text;
-    widget.cliente!.createdAt = DateTime.now(); */
 
     try {
       await ClientController.updateClient(newClient);
