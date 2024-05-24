@@ -50,13 +50,13 @@ class User extends Entity {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-        idUser: map['IDUSER'],
-        name: map['NAME'],
-        lastname: map['LASTNAME'],
-        user: map['USER'],
-        email: map['EMAIL'],
-        age: map['AGE'],
-        password: map['PASSWORD']);
+        idUser: map['IDUSER'] ?? map['id_user'],
+        name: map['NAME'] ?? map['name'],
+        lastname: map['LASTNAME'] ?? map['lastname'],
+        user: map['USER'] ?? map['user'],
+        email: map['EMAIL'] ?? map['email'],
+        age: map['AGE'] ?? map['age'],
+        password: map['PASSWORD'] ?? map['password']);
   }
 
   factory User.fromMapAudit(Map<String, dynamic> map) {
