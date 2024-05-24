@@ -4,10 +4,6 @@ import 'dart:developer';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-void initDataBase() {
-  createTables();
-}
-
 /// Conectamos a la base MSA, se crea si no existe
 Future<Database> connectToDb() async {
   // Open the database and store the reference.
@@ -17,7 +13,7 @@ Future<Database> connectToDb() async {
 }
 
 /// Creacion de tablas
-void createTables() async {
+void initOrCreateTables() async {
   //Obtenemos la conexion
   final db = await connectToDb();
 

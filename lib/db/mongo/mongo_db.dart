@@ -36,17 +36,4 @@ class MongoConnection {
     _db?.close();
   }
 
-  static void main() async {
-    final db = await MongoConnection().getConnection();
-
-    try {
-      await db!.open();
-      var userCollection = db.collection('user');
-      await userCollection.find().forEach((element) {
-        log(element.toString());
-      });
-    } catch (e) {
-      log("Error main: $e");
-    }
-  }
 }
