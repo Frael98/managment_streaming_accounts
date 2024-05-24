@@ -1,10 +1,10 @@
 import 'dart:developer';
 
-import 'package:f_managment_stream_accounts/db/database.dart';
+import 'package:f_managment_stream_accounts/db/sqlite/sqlflite_db.dart';
 import 'package:f_managment_stream_accounts/models/user.dart';
 import 'package:sqflite/sqflite.dart';
 
-class UserController {
+class UserControllerSQLite {
   ///Registrar
   static Future<int> addUser(User user) async {
     final dbConnection = await connectToDb();
@@ -47,7 +47,7 @@ class UserController {
   }
 
   /// Iniciar Sesion
-  static Future<List<User>?> logIn(User user) async {
+  static Future<User?> logIn(User user) async {
     final dbConnection = await connectToDb();
 
     final data = await dbConnection.query('USER',
@@ -61,6 +61,6 @@ class UserController {
 
     log(data.first.toString());
     //return List.generate(data.length, (index) => User.fromMap(data[index]));
-    return data.map((user) => User.fromMap(user)).toList();
+    return User.fromMap(data.first);
   }
 }

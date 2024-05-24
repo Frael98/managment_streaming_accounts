@@ -1,10 +1,10 @@
 import 'dart:developer';
 
-import 'package:f_managment_stream_accounts/db/database.dart';
+import 'package:f_managment_stream_accounts/db/sqlite/sqlflite_db.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:sqflite/sqflite.dart';
 
-class ClientController {
+class ClientControllerSQLite {
   ///Registrar
   static Future<int> addClient(Client client) async {
     final dbConnection = await connectToDb();
