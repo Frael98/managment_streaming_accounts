@@ -6,5 +6,5 @@
 
 ## Home
 
-![alt text](images/home_menu.png.png)
+![alt text](images/home_menu.png)
 
