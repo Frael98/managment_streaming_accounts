@@ -16,7 +16,7 @@ class Client extends Entity {
       this.email,
       createdAt,
       updatedAt,
-      deletedAt});
+      deletedAt}): super(createdAt: createdAt, updatedAt: updatedAt, deletedAt: deletedAt);
 
   Client.audit({this.idClient, state, createdAt, updatedAt, deletedAt});
 
@@ -38,14 +38,14 @@ class Client extends Entity {
 
   factory Client.fromMap(Map<String, dynamic> map) {
     return Client(
-        idClient: map['ID_CLIENT'],
-        nameClient: map['NAME_CLIENT'],
-        numberPhone: map['NUMBER_PHONE'],
-        direction: map['DIRECTION'],
-        email: map['EMAIL'],
-        createdAt: map['CREATED_AT'],
-        updatedAt: map['UPDATED_AT'],
-        deletedAt: map['DELETED_AT']);
+        idClient: map['ID_CLIENT'] ?? map['id_client'],
+        nameClient: map['NAME_CLIENT'] ?? map['name_client'],
+        numberPhone: map['NUMBER_PHONE'] ?? map['number_phone'],
+        direction: map['DIRECTION'] ?? map['direction'],
+        email: map['EMAIL'] ?? map['email'],
+        createdAt: map['CREATED_AT'] ?? (map['created_at']),
+        updatedAt: map['UPDATED_AT'] ?? map['updated_at'],
+        deletedAt: map['DELETED_AT'] ?? map['deleted_at']);
   }
 
   factory Client.fromMapAudit(Map<String, dynamic> map) {
@@ -55,5 +55,10 @@ class Client extends Entity {
         createdAt: map['CREATED_AT'],
         updatedAt: map['UPDATED_AT'],
         deletedAt: map['DELETED_AT']);
+  }
+
+  @override
+  String toString() {
+    return "idCliente: $idClient, name_client: $nameClient, number phone: $numberPhone, direction $direction, email: $email, state: $state, created_at: $createdAt";
   }
 }
