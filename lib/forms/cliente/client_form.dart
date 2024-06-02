@@ -1,5 +1,6 @@
 import 'dart:developer';
-import 'package:f_managment_stream_accounts/controllers/client_controller.dart';
+import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
@@ -55,7 +56,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: TextFormField(
-                maxLength: 25,
+                maxLength: 10,
                 decoration: const InputDecoration(
                   labelText: 'Número celular*',
                   contentPadding: EdgeInsets.all(15.0),
@@ -67,8 +68,11 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: TextFormField(
-                maxLength: 25,
-                decoration: const InputDecoration(labelText: 'Dirección'),
+                maxLength: 35,
+                decoration: const InputDecoration(
+                  labelText: 'Dirección',
+                  contentPadding: EdgeInsets.all(15.0),
+                ),
                 controller: _directionController,
               ),
             ),
@@ -76,7 +80,10 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: TextFormField(
                 maxLength: 25,
-                decoration: const InputDecoration(labelText: 'Email*'),
+                decoration: const InputDecoration(
+                  labelText: 'Email*',
+                  contentPadding: EdgeInsets.all(15.0),
+                ),
                 controller: _emailController,
                 validator: validateEmail,
               ),
@@ -114,15 +121,14 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
 
   Future<void> obtenerClienteAsync() async {
     if (widget.idClient != 0) {
-      Client? cliente = await ClientController.getClient(widget.idClient);
-
-      if (cliente != null) {
-        idCliente = cliente.idClient;
-        _nameClientController.text = cliente.nameClient!;
-        _numberPhoneController.text = cliente.numberPhone!;
-        _directionController.text = cliente.direction!;
-        _emailController.text = cliente.email!;
-      }
+      //Client? cliente = await ClientControllerSQLite.getClient(widget.idClient);
+      Client? cliente = await ClientControllerMongo.getClient(widget.idClient);
+      log(cliente.toString());
+      idCliente = cliente.idClient;
+      _nameClientController.text = cliente.nameClient!;
+      _numberPhoneController.text = cliente.numberPhone!;
+      _directionController.text = cliente.direction!;
+      _emailController.text = cliente.email!;
     }
   }
 
@@ -148,7 +154,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         createdAt: DateTime.now().toIso8601String());
 
     try {
-      await ClientController.addClient(newClient);
+      await ClientControllerSQLite.addClient(newClient);
       limpiarTexts();
       showToast('Cliente guardado correctamente!');
       goToClientList();
@@ -157,6 +163,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     }
   }
 
+/// Actulizar cliente
   void updateClient(BuildContext context) async {
     String name = _nameClientController.text.trim();
     String number = _numberPhoneController.text.trim();
@@ -172,10 +179,13 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         updatedAt: DateTime.now().toIso8601String());
 
     try {
-      await ClientController.updateClient(newClient);
-      limpiarTexts();
-      showToast('Cliente actualizado correctamente!');
-      goToClientList();
+      var id = await ClientControllerSQLite.updateClient(newClient);
+
+      if (id > 0) {
+        limpiarTexts();
+        showToast('Cliente actualizado correctamente!');
+        goToClientList();
+      }
     } catch (e) {
       log('Error al actualizar al usuario: $e');
     }
@@ -183,7 +193,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
 
   void deleteClient(BuildContext context) async {
     try {
-      int id = await ClientController.deleteClient(widget.idClient);
+      int id = await ClientControllerSQLite.deleteClient(widget.idClient);
       if (id != 0) {
         showToast("Cliente eliminado correctamente");
         goToClientList();

@@ -1,11 +1,43 @@
 import 'dart:developer';
-import 'package:f_managment_stream_accounts/controllers/client_controller.dart';
+import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_form.dart';
+import 'package:f_managment_stream_accounts/forms/components/search_delegate.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:flutter/material.dart';
 
-class ClientListView extends StatelessWidget {
+const _defaultClientImage = 'assets/ichi.jpg';
+
+class ClientListView extends StatefulWidget {
   const ClientListView({super.key});
+
+  @override
+  State<StatefulWidget> createState() => ClientListViewState();
+}
+
+class ClientListViewState extends State<ClientListView> {
+  List<Client>? clientes;
+  List<Client>? clientesHistorial = [];
+
+  @override
+  void initState() {
+    initializeClients();
+    super.initState();
+  }
+
+  Future initializeClients() async {
+    try {
+      List<Client>? clientesCargados =
+          await ClientControllerMongo.getClients();
+          //await ClientControllerSQLite.getClients();
+      setState(() {
+        clientes = clientesCargados;
+      });
+      log("Clientes cargados");
+    } catch (e) {
+      log('Error consultando datos $e');
+    }
+  }
 
   /// Widget global
   @override
@@ -13,48 +45,34 @@ class ClientListView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Clientes'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              //var cliente =
+              showSearch(
+                  context: context,
+                  delegate: SearchFieldDelegate(clientes!, getName));
+              //, clientesHistorial!));
+
+              //clientesHistorial!.insert(0, cliente as Client);
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
         onPressed: () => onClientForm(context),
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: FutureBuilder(future: getClients(context), builder: getBuilder),
-    );
-  }
-
-  ///Obtiene lista de clientes de la BD
-  Future<List<Widget>> getClients(BuildContext context) async {
-    try {
-      List<Client>? clientes = await ClientController.getClients();
-      return clientes!
-          .map((cliente) => buildClientTile(context, cliente))
-          .toList();
-    } catch (e) {
-      log('Error consultando datos $e');
-      return [];
-    }
-  }
-
-  ///
-  Widget buildClientTile(BuildContext context, Client client) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ListTile(
-        leading: AspectRatio(
-          aspectRatio: 0.9,
-          child: Image.asset('assets/ichi.jpg'),
-        ),
-        title: Text(client.nameClient!,
-            style: Theme.of(context).textTheme.titleLarge),
-        trailing: Text('${client.numberPhone!} '),
-        onTap: () => onClientForm(context, idClient: client.idClient),
-      ),
+      body: clientes != null
+          ? buildClientTile(context, clientes!)
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
   /// Abrir el formulario para actualizar o agregar cliente
-  void onClientForm(BuildContext context, {int? idClient}) {
+  static void onClientForm(BuildContext context, {int? idClient}) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -63,29 +81,62 @@ class ClientListView extends StatelessWidget {
     );
   }
 
-  Widget searchFieldText() {
-    return const TextField(
-        autofocus: true,
-        decoration: InputDecoration(hintText: 'Buscar cliente'));
+  ///
+  static Widget buildClientTile(BuildContext context, List<Client>? clientes) {
+    return ListView.builder(
+      itemCount: clientes!.length,
+      itemBuilder: (_, index) {
+        final client = clientes[index];
+
+        /* return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(color: Colors.grey),
+            color: const Color.fromARGB(255, 78, 78, 76)
+          ),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.5),
+            child: ListTile(
+              contentPadding:
+                  const EdgeInsets.all(10.0), // padding del listtile
+              tileColor:
+                  const Color.fromARGB(255, 66, 65, 65), // color del fondo
+              leading: AspectRatio(
+                aspectRatio: 0.9,
+                child: Image.asset(_defaultClientImage),
+              ),
+              title: Text(client.nameClient!,
+                  style: Theme.of(context).textTheme.titleLarge),
+              trailing: Text('${client.numberPhone!} '),
+              onTap: () => onClientForm(context, idClient: client.idClient),
+            ),
+          ),
+        ); */
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.5),
+          child: ListTile(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            contentPadding: const EdgeInsets.all(10.0), // padding del listtile
+            tileColor: const Color.fromARGB(255, 66, 65, 65), // color del fondo
+            leading: AspectRatio(
+              aspectRatio: 0.9,
+              child: Image.asset(_defaultClientImage),
+            ),
+            title: Text(client.nameClient!,
+                style: Theme.of(context).textTheme.titleLarge),
+            trailing: Text('${client.numberPhone!} '),
+            onTap: () => onClientForm(context, idClient: client.idClient),
+          ),
+        );
+      },
+    );
   }
 
-  /// Widget de los tiles
-  Widget getBuilder(BuildContext context, AsyncSnapshot snapshot) {
-    if (snapshot.connectionState == ConnectionState.done) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            searchFieldText(),
-            ...snapshot.data as List<Widget>,
-            ...List.generate(30, (index) => const ListTile(leading: Text('data'), )),
-            const SizedBox(height: 20.0),
-          ],
-        ),
-      );
-    } else {
-      return const Center(child: CircularProgressIndicator());
-    }
+  String getName(Client client) {
+    return client.nameClient!;
   }
 }
