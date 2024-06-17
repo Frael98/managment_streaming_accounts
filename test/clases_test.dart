@@ -2,6 +2,7 @@
 
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/models/subscription.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 
 class Animal {
 
@@ -23,7 +24,7 @@ void main() {
   // perro.nombre = 'otro'; - es final no puede ser modificado
   print(perro.nombre);
 
-  Subscription netflix = Subscription(idAccount: "d", idClient: "2", dateStarted: DateTime.now() , dateFinish: DateTime.now(), valueToPay: 2.2);
+  Subscription netflix = Subscription(idAccount: ObjectId(), idClient: "2", dateStarted: DateTime.now() , dateFinish: DateTime.now(), valueToPay: 2.2);
 
   print(netflix.toString());
 

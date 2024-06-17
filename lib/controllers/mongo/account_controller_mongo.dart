@@ -66,12 +66,74 @@ class AccountControllerMongo {
     return Account.fromMap(result!);
   }
 
-  static Future<List<Account>> getAccounts(Account account) async {
+  static Future<Account> getAccountAggregate(ObjectId uid) async {
+    final collectionAccount = await _getCollection();
+
+    final match = Match(where.id(uid));
+
+    final lookupTypeAccount = Lookup(
+        from: "type_account",
+        localField: "type_account",
+        foreignField: "_id",
+        as: "type_account");
+
+    final lookupPlatform = Lookup(
+        from: "platform",
+        localField: "platform",
+        foreignField: "_id",
+        as: "platform");
+
+    final unwind = Unwind(const Field('type_account'));
+    final unwind2 = Unwind(const Field('platform'));
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(match)
+        .addStage(lookupTypeAccount)
+        .addStage(unwind)
+        .addStage(lookupPlatform)
+        .addStage(unwind2)
+        .build();
+
+    var result = await collectionAccount?.aggregateToStream(pipeline).toList();
+
+    return Account.fromMap(result!.first);
+  }
+
+  static Future<List<Account>> getAccounts() async {
     final collection = await _getCollection();
     var result = await collection!.find().toList();
 
     log(result.first.toString());
 
     return result.map((account) => Account.fromMap(account)).toList();
+  }
+
+  static Future<List<Account>> getAccountsList() async {
+    final collectionAccount = await _getCollection();
+    final lookupTypeAccount = Lookup(
+        from: "type_account",
+        localField: "type_account",
+        foreignField: "_id",
+        as: "type_account");
+
+    final lookupPlatform = Lookup(
+        from: "platform",
+        localField: "platform",
+        foreignField: "_id",
+        as: "platform");
+
+    final unwind = Unwind(const Field('type_account'));
+    final unwind2 = Unwind(const Field('platform'));
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(lookupTypeAccount)
+        .addStage(unwind)
+        .addStage(lookupPlatform)
+        .addStage(unwind2)
+        .build();
+
+    var result = await collectionAccount?.aggregateToStream(pipeline).toList();
+
+    return result!.map((account) => Account.fromMapObject(account)).toList();
   }
 }

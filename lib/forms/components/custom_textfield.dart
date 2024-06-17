@@ -5,12 +5,14 @@ class CustomTextFormField extends StatelessWidget {
   final String? hintText;
   final bool obscureText;
   final TextEditingController? controller;
-  final Widget? pre;
-  final Widget? sur;
+  final Widget? preIcon;
+  final Widget? sufIcon;
   final String? Function(String?)? validator;
   final bool autofocus;
   final int minLine;
   final int maxLine;
+  final bool enabled;
+  final TextInputType? keyboardType;
 
   const CustomTextFormField(
       {super.key,
@@ -18,16 +20,20 @@ class CustomTextFormField extends StatelessWidget {
       this.hintText,
       required this.controller,
       this.obscureText = false,
-      this.pre,
-      this.sur,
+      this.preIcon,
+      this.sufIcon,
       this.validator,
       this.maxLine = 1,
       this.minLine = 1,
-      this.autofocus = false});
+      this.autofocus = false,
+      this.enabled = true,
+      this.keyboardType });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+        enabled: enabled,
+        keyboardType: keyboardType,
         minLines: minLine,
         maxLines: maxLine,
         controller: controller,
@@ -36,8 +42,8 @@ class CustomTextFormField extends StatelessWidget {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           labelText: labelText,
           hintText: hintText,
-          prefixIcon: pre,
-          suffixIcon: sur,
+          prefixIcon: preIcon,
+          suffixIcon: sufIcon,
         ),
         autofocus: autofocus,
         obscureText: obscureText,

@@ -1,7 +1,11 @@
-import 'dart:developer';
-
-import 'package:f_managment_stream_accounts/forms/client_form.dart';
+import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_expansion_tile.dart';
+import 'package:f_managment_stream_accounts/forms/cuentas/account_form.dart';
+import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
+import 'package:f_managment_stream_accounts/forms/log_in.dart';
+import 'package:f_managment_stream_accounts/forms/plataforma/platform_list.dart';
 import 'package:flutter/material.dart';
+import 'package:toast/toast.dart';
 
 class HomeScreen extends StatelessWidget {
   final String usuario;
@@ -11,6 +15,10 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (ToastContext().context == null) {
+      ToastContext().init(context);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inicio'),
@@ -23,54 +31,13 @@ class HomeScreen extends StatelessWidget {
               accountName: Text(usuario),
               accountEmail: Text(correo),
               currentAccountPicture: const CircleAvatar(
-                backgroundImage:
-                    AssetImage('assets/imagen_usuario.jpg'), // Imagen
+                backgroundImage: AssetImage('assets/ichi.jpg'), // Imagen
               ),
               decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 17, 27, 54),
               ),
             ),
-            ListTile(
-              title: const Text('Clientes'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ClientFormScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              title: const Text('Pedir a domicilio'),
-              onTap: () {
-                /* Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RestaurantesPage(),
-                  ),
-                ); */
-              },
-            ),
-            ListTile(
-              title: const Text('Configuración'),
-              onTap: () {
-                // TODO
-              },
-            ),
-            ListTile(
-              title: const Text('Cerrar sesión'),
-              onTap: () {
-                /* Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LogIn(title: ''),
-                  ),
-                  (route) =>
-                      false, // Elimina todas las rutas anteriores del historial de navegación
-                ); */
-              },
-            ),
+            ...menus(context)
           ],
         ),
       ),
@@ -83,20 +50,70 @@ class HomeScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 20, color: Colors.white),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Resurantes cerca'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                log('Pedir a Domicilio');
-              },
-              child: const Text('Pedir a Domicilio'),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> submenus(BuildContext context) {
+    return [
+      ListTile(
+        leading: const Icon(Icons.contact_mail),
+        title: const Text('Clientes'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ClientListView(),
+            ),
+          );
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.account_box_rounded),
+        title: const Text('Cuentas'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AccountListView(),
+            ),
+          );
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.dvr),
+        title: const Text('Plataformas'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PlatformListView(),
+            ),
+          );
+        },
+      ),
+    ];
+  }
+
+  List<Widget> menus(BuildContext context) {
+    return [
+      CustomExpansionTile(title: 'Acciones', tiles: submenus(context)),
+      ListTile(
+        leading: const Icon(Icons.logout),
+        title: const Text('Cerrar sesión'),
+        onTap: () {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LogIn(title: ''),
+            ),
+            (route) =>
+                false, // Elimina todas las rutas anteriores del historial de navegación
+          );
+        },
+      ),
+    ];
   }
 }

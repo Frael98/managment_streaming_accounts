@@ -1,15 +1,16 @@
 import 'dart:developer';
+//import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
 // ignore: must_be_immutable
 class ClientFormScreen extends StatefulWidget {
   ClientFormScreen(this.idClient, {super.key});
-  var idClient = 0;
+  dynamic idClient;
 
   @override
   // ignore: library_private_types_in_public_api
@@ -17,17 +18,33 @@ class ClientFormScreen extends StatefulWidget {
 }
 
 class _ClientFormScreenState extends State<ClientFormScreen> {
-  final GlobalKey<FormState> key = GlobalKey<FormState>();
-  int? idCliente = 0;
+  final GlobalKey<FormState> _key = GlobalKey<FormState>();
+  dynamic idCliente = 0;
   final TextEditingController _nameClientController = TextEditingController();
   final TextEditingController _numberPhoneController = TextEditingController();
   final TextEditingController _directionController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+  late final TextEditingController? _emailController;
 
   @override
   void initState() {
     obtenerClienteAsync();
     super.initState();
+    _emailController = TextEditingController();
+  }
+
+  Future<void> obtenerClienteAsync() async {
+    if (widget.idClient != 0) {
+      //Client? cliente = await ClientControllerSQLite.getClient(widget.idClient);
+      Client? cliente = await ClientControllerMongo.getClient(widget.idClient);
+      log(cliente.toString());
+      setState(() {
+        idCliente = cliente.id ?? cliente.uid;
+      });
+      _nameClientController.text = cliente.nameClient!;
+      _numberPhoneController.text = cliente.numberPhone!;
+      _directionController.text = cliente.direction!;
+      _emailController!.text = cliente.email!;
+    }
   }
 
   @override
@@ -37,7 +54,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         title: const Text('Clientes'),
       ),
       body: Form(
-        key: key,
+        key: _key,
         child: Column(
           children: [
             Padding(
@@ -90,7 +107,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
             ),
             ElevatedButton(
               style: const ButtonStyle(
-                backgroundColor: MaterialStatePropertyAll(Colors.red),
+                backgroundColor: WidgetStatePropertyAll(Colors.deepOrange),
               ),
               onPressed: () {
                 //deleteClient(context);
@@ -106,7 +123,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.save),
         onPressed: () {
-          if (key.currentState!.validate()) {
+          if (_key.currentState!.validate()) {
             if (idCliente != 0) {
               updateClient(context);
             } else {
@@ -119,90 +136,87 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     );
   }
 
-  Future<void> obtenerClienteAsync() async {
-    if (widget.idClient != 0) {
-      //Client? cliente = await ClientControllerSQLite.getClient(widget.idClient);
-      Client? cliente = await ClientControllerMongo.getClient(widget.idClient);
-      log(cliente.toString());
-      idCliente = cliente.idClient;
-      _nameClientController.text = cliente.nameClient!;
-      _numberPhoneController.text = cliente.numberPhone!;
-      _directionController.text = cliente.direction!;
-      _emailController.text = cliente.email!;
-    }
-  }
-
   /// Limpiar campos
   void limpiarTexts() {
     _nameClientController.text = '';
     _numberPhoneController.text = '';
     _directionController.text = '';
-    _emailController.text = '';
+    _emailController!.text = '';
   }
 
+  /// Registrar cliente
   void registerClient(BuildContext context) async {
     String name = _nameClientController.text.trim();
     String number = _numberPhoneController.text.trim();
     String direction = _directionController.text.trim();
-    String email = _emailController.text.trim();
+    String email = _emailController!.text.trim();
 
     Client newClient = Client(
         nameClient: name,
         numberPhone: number,
         direction: direction,
         email: email,
+        state: 'A',
         createdAt: DateTime.now().toIso8601String());
 
     try {
-      await ClientControllerSQLite.addClient(newClient);
-      limpiarTexts();
-      showToast('Cliente guardado correctamente!');
+      //var message = await ClientControllerSQLite.addClient(newClient);
+      var message = await ClientControllerMongo.addClient(newClient);
+      if (!message.toLowerCase().contains("error")) {
+        limpiarTexts();
+      }
+      showToast(message);
       goToClientList();
     } catch (e) {
-      log('Error al registrar al usuario: $e');
+      log('Error al registrar al cliente: $e');
     }
   }
 
-/// Actulizar cliente
+  /// Actualizar cliente
   void updateClient(BuildContext context) async {
     String name = _nameClientController.text.trim();
     String number = _numberPhoneController.text.trim();
     String direction = _directionController.text.trim();
-    String email = _emailController.text.trim();
+    String email = _emailController!.text.trim();
 
+    /// Aqui se crea un nuevo objeto con el id, el toMap() solo hara que los campos necesarios se actualizen
     Client newClient = Client(
-        idClient: idCliente,
+        uid: idCliente is mongo.ObjectId ? idCliente : null,
+        id: idCliente is int ? idCliente : 0,
         nameClient: name,
         numberPhone: number,
         direction: direction,
         email: email,
-        updatedAt: DateTime.now().toIso8601String());
-
+        updatedAt: DateTime.now());
+    log(newClient.toString());
     try {
-      var id = await ClientControllerSQLite.updateClient(newClient);
-
-      if (id > 0) {
+      var message = await ClientControllerMongo.updateClient(newClient);
+      //var message = await ClientControllerSQLite.updateClient(newClient);
+      if (!message.toLowerCase().contains("error")) {
         limpiarTexts();
-        showToast('Cliente actualizado correctamente!');
-        goToClientList();
       }
+      showToast(message);
+      goToClientList();
     } catch (e) {
       log('Error al actualizar al usuario: $e');
     }
   }
 
-  void deleteClient(BuildContext context) async {
+  /// Eliminar cliente
+  void deleteClient() async {
     try {
-      int id = await ClientControllerSQLite.deleteClient(widget.idClient);
-      if (id != 0) {
-        showToast("Cliente eliminado correctamente");
+      //var message = await ClientControllerSQLite.deleteClient(widget.idClient);
+      var message = await ClientControllerMongo.deleteClient(widget.idClient);
+      if (!message.toLowerCase().contains("error")) {
         goToClientList();
       }
+      showToast(message);
     } catch (e) {
       log('Error en eliminacion de cliente $e');
     }
   }
 
+  /// Navegar a lista de clientes
   void goToClientList() {
     Navigator.pushReplacement(
       context,
@@ -211,4 +225,5 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       ),
     );
   }
+
 }//End class

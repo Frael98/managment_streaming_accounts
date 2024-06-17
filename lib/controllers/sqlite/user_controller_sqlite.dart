@@ -19,7 +19,7 @@ class UserControllerSQLite {
 
     return await dbConnection.update('USER', user.toMap(),
         where: 'idUser = ?',
-        whereArgs: [user.idUser],
+        whereArgs: [user.id],
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -28,7 +28,7 @@ class UserControllerSQLite {
     final dbConnection = await connectToDb();
 
     return await dbConnection
-        .delete('USER', where: 'idUser = ?', whereArgs: [user.idUser]);
+        .delete('USER', where: 'idUser = ?', whereArgs: [user.id]);
   }
 
   ///Listar usuarios
@@ -60,7 +60,7 @@ class UserControllerSQLite {
     }
 
     log(data.first.toString());
-    //return List.generate(data.length, (index) => User.fromMap(data[index]));
+  
     return User.fromMap(data.first);
   }
 }

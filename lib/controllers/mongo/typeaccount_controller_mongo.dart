@@ -60,8 +60,7 @@ class TypeAccountControllerMongo {
     return TypeAccount.fromMap(result!);
   }
 
-  static Future<List<TypeAccount>> getTypeAccounts(
-      TypeAccount typeAccount) async {
+  static Future<List<TypeAccount>> getTypeAccounts() async {
     final collection = await _getCollection();
     var result = await collection!.find().toList();
 

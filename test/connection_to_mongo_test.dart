@@ -1,10 +1,10 @@
 // ignore_for_file: avoid_print
 
+import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 void main() async {
-  
   try {
     Db db = Db('mongodb://localhost:27017/msi_dart');
     await db.open();
@@ -44,7 +44,7 @@ void main() async {
     for (var e in result) {
       print(e.toString());
     } */
-    var plataformCollection = db.collection('platform');
+    /* var plataformCollection = db.collection('platform');
 
     print('/******************* PRUEBAS INSERT MONGO ****************/');
 
@@ -66,8 +66,65 @@ void main() async {
 
     var objPlatform = Platform.fromMap(plataforma!);
 
-    print(objPlatform.toString());
+    print(objPlatform.toString()); */
 
+    var collectionAccount = db.collection('account');
+   /* 
+
+    final lookupTypeAccount = Lookup(
+        from: "type_account",
+        localField: "type_account",
+        foreignField: "_id",
+        as: "type_account");
+
+    final lookupPlatform = Lookup(
+        from: "platform",
+        localField: "platform",
+        foreignField: "_id",
+        as: "platform");
+
+    final unwind = Unwind(const Field('type_account'));
+    final unwind2 = Unwind(const Field('platform'));
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(lookupTypeAccount)
+        .addStage(unwind)
+        .addStage(lookupPlatform)
+        .addStage(unwind2)
+        .build();
+
+    var result = await collectionAccount.aggregateToStream(pipeline).toList(); */
+
+    final match = Match({'_id': ObjectId.fromHexString('665e7d97b0f84e9183cbf54d')});
+    final lookupTypeAccount = Lookup(
+        from: "type_account",
+        localField: "type_account",
+        foreignField: "_id",
+        as: "type_account");
+
+    final lookupPlatform = Lookup(
+        from: "platform",
+        localField: "platform",
+        foreignField: "_id",
+        as: "platform");
+
+    final unwind = Unwind(const Field('type_account'));
+    final unwind2 = Unwind(const Field('platform'));
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(match)
+        .addStage(lookupTypeAccount)
+        .addStage(unwind)
+        .addStage(lookupPlatform)
+        .addStage(unwind2)
+        .build();
+
+    var result = await collectionAccount.aggregateToStream(pipeline).toList();
+
+    print(result.first);
+    for (var element in result) {
+      print(Account.fromMapObject(element).toString());
+    }
     await db.close();
 
     print("Conexion cerrada");

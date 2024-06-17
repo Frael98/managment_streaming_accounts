@@ -1,8 +1,9 @@
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 
 /// Subscripcion
 class Subscription extends Entity {
-  final String _idAccount;
+  final ObjectId _idAccount;
   final String _idClient;
   final DateTime _dateStarted;
   final DateTime _dateFinish;
@@ -11,7 +12,7 @@ class Subscription extends Entity {
   Subscription({
     uid,
     id,
-    required String idAccount,
+    required ObjectId idAccount,
     required String idClient,
     required DateTime dateStarted,
     required DateTime dateFinish,
@@ -51,13 +52,17 @@ class Subscription extends Entity {
       'id_client': idClient,
       'date_started': dateStarted,
       'date_finish': dateFinish,
-      'value_to_pay': valueToPay
+      'value_to_pay': valueToPay,
+      'state': state,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+      'deleted_at': deletedAt
     };
   }
 
   // Getter methods
   //String? get idSubscription => _idSubscription;
-  String get idAccount => _idAccount;
+  ObjectId get idAccount => _idAccount;
   String get idClient => _idClient;
   DateTime get dateStarted => _dateStarted;
   DateTime get dateFinish => _dateFinish;

@@ -1,6 +1,6 @@
 import 'dart:developer';
+//import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_form.dart';
 import 'package:f_managment_stream_accounts/forms/components/search_delegate.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
@@ -72,11 +72,11 @@ class ClientListViewState extends State<ClientListView> {
   }
 
   /// Abrir el formulario para actualizar o agregar cliente
-  static void onClientForm(BuildContext context, {int? idClient}) {
+  static void onClientForm(BuildContext context, {dynamic idClient}) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ClientFormScreen(idClient ?? 0),
+        builder: (context) => ClientFormScreen(idClient),
       ),
     );
   }
@@ -88,32 +88,6 @@ class ClientListViewState extends State<ClientListView> {
       itemBuilder: (_, index) {
         final client = clientes[index];
 
-        /* return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10.0),
-            border: Border.all(color: Colors.grey),
-            color: const Color.fromARGB(255, 78, 78, 76)
-          ),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.5),
-            child: ListTile(
-              contentPadding:
-                  const EdgeInsets.all(10.0), // padding del listtile
-              tileColor:
-                  const Color.fromARGB(255, 66, 65, 65), // color del fondo
-              leading: AspectRatio(
-                aspectRatio: 0.9,
-                child: Image.asset(_defaultClientImage),
-              ),
-              title: Text(client.nameClient!,
-                  style: Theme.of(context).textTheme.titleLarge),
-              trailing: Text('${client.numberPhone!} '),
-              onTap: () => onClientForm(context, idClient: client.idClient),
-            ),
-          ),
-        ); */
-
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.5),
           child: ListTile(
@@ -121,15 +95,15 @@ class ClientListViewState extends State<ClientListView> {
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             contentPadding: const EdgeInsets.all(10.0), // padding del listtile
-            tileColor: const Color.fromARGB(255, 66, 65, 65), // color del fondo
+            tileColor: const Color.fromARGB(255, 43, 42, 42), // color del fondo
             leading: AspectRatio(
               aspectRatio: 0.9,
               child: Image.asset(_defaultClientImage),
             ),
-            title: Text(client.nameClient!,
+            title: Text('${client.nameClient}',
                 style: Theme.of(context).textTheme.titleLarge),
-            trailing: Text('${client.numberPhone!} '),
-            onTap: () => onClientForm(context, idClient: client.idClient),
+            trailing: Text('${client.numberPhone} '),
+            onTap: () => onClientForm(context, idClient: client.id ?? client.uid),
           ),
         );
       },

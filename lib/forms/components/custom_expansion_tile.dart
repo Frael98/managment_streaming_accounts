@@ -7,10 +7,10 @@ class CustomExpansionTile extends StatefulWidget {
       {super.key, required this.title, required this.tiles});
 
   @override
-  State<CustomExpansionTile> createState() => _ExpansionTileExampleState();
+  State<CustomExpansionTile> createState() => _ExpansionTileState();
 }
 
-class _ExpansionTileExampleState extends State<CustomExpansionTile> {
+class _ExpansionTileState extends State<CustomExpansionTile> {
   bool _isExpanded = false;
 
   @override
@@ -28,7 +28,6 @@ class _ExpansionTileExampleState extends State<CustomExpansionTile> {
               _isExpanded = expanded;
             });
           },
-          //subtitle: Text('Trailing expansion arrow icon'),
           children: widget.tiles,
         )
         /* const ExpansionTile(

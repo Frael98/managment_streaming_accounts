@@ -8,7 +8,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 class ClientControllerMongo {
   ClientControllerMongo();
 
-  static Future<DbCollection?> getClientCollection() async {
+  static Future<DbCollection?> _getClientCollection() async {
     Db? db;
     try {
       db = await MongoConnection().getConnection();
@@ -24,7 +24,7 @@ class ClientControllerMongo {
 
   /// Agregar un cliente
   static Future<String> addClient(Client client) async {
-    var clientCollection = await getClientCollection();
+    var clientCollection = await _getClientCollection();
     var result = await clientCollection!.insertOne(client.toMap());
 
     if (result.isSuccess) {
@@ -35,7 +35,7 @@ class ClientControllerMongo {
 
   /// Obtener todos los clientes
   static Future<List<Client>> getClients() async {
-    var clientCollection = await getClientCollection();
+    var clientCollection = await _getClientCollection();
     var result = await clientCollection!.find().toList();
     //log(result.first.toString());
     return result.map((client) => Client.fromMap(client)).toList();
@@ -43,7 +43,7 @@ class ClientControllerMongo {
 
   ///Buscar un cliente por el id
   static Future<Client> getClient(ObjectId uid) async {
-    var clientCollection = await getClientCollection();
+    var clientCollection = await _getClientCollection();
     var client = await clientCollection!.findOne({"_id": uid});
 
     log(client.toString());
@@ -52,7 +52,7 @@ class ClientControllerMongo {
 
   ///Actualizar un cliente por id
   static Future<String> updateClient(Client client) async {
-    final clientCollection = await getClientCollection();
+    final clientCollection = await _getClientCollection();
     var result = await clientCollection!.updateOne(
       where.eq('_id', client.uid),
       modify
@@ -68,4 +68,15 @@ class ClientControllerMongo {
     }
     return "Error no se pudo actualizar el cliente ${result.errmsg}";
   }
+
+ static Future<String> deleteClient(ObjectId uid) async {
+    final collection = await _getClientCollection();
+    var result = await collection!.deleteOne({'_id': uid});
+
+    if (result.isSuccess) {
+      return "Cliente eliminada correctamente";
+    }
+    return "Error no se pudo eliminar cliente ${result.errmsg}";
+  }
+
 }
