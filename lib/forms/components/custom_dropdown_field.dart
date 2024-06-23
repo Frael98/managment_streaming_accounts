@@ -1,9 +1,6 @@
 //import 'package:f_managment_stream_accounts/providers/theme_provider.dart';
 import 'dart:developer';
-
-import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:flutter/material.dart';
-import 'package:mongo_dart/mongo_dart.dart' as mongo;
 //import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -74,6 +71,7 @@ class _CustomDropDownButtonState<T> extends State<CustomDropDownField<T>> {
         setState(() {
           _selectedItem = newValue;
           widget.controller!.text = widget.valueText(newValue as T);
+          log('item Seleccionado $_selectedItem');
         });
       },
       //Asignacion de datos en el combo

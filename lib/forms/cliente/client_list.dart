@@ -9,27 +9,31 @@ import 'package:flutter/material.dart';
 const _defaultClientImage = 'assets/ichi.jpg';
 
 class ClientListView extends StatefulWidget {
-  const ClientListView({super.key});
+  bool returnClient;
+  ClientListView({super.key, this.returnClient = false});
 
   @override
   State<StatefulWidget> createState() => ClientListViewState();
 }
 
 class ClientListViewState extends State<ClientListView> {
+  static bool returnClient = false;
   List<Client>? clientes;
   List<Client>? clientesHistorial = [];
 
   @override
   void initState() {
     initializeClients();
+    setState(() {
+      returnClient = widget.returnClient;
+    });
     super.initState();
   }
 
   Future initializeClients() async {
     try {
-      List<Client>? clientesCargados =
-          await ClientControllerMongo.getClients();
-          //await ClientControllerSQLite.getClients();
+      List<Client>? clientesCargados = await ClientControllerMongo.getClients();
+      //await ClientControllerSQLite.getClients();
       setState(() {
         clientes = clientesCargados;
       });
@@ -62,7 +66,7 @@ class ClientListViewState extends State<ClientListView> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
-        onPressed: () => onClientForm(context),
+        onPressed: () => _onClientForm(context),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: clientes != null
@@ -72,7 +76,7 @@ class ClientListViewState extends State<ClientListView> {
   }
 
   /// Abrir el formulario para actualizar o agregar cliente
-  static void onClientForm(BuildContext context, {dynamic idClient}) {
+  static void _onClientForm(BuildContext context, {dynamic idClient}) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -82,7 +86,7 @@ class ClientListViewState extends State<ClientListView> {
   }
 
   ///
-  static Widget buildClientTile(BuildContext context, List<Client>? clientes) {
+ static Widget buildClientTile(BuildContext context, List<Client>? clientes) {
     return ListView.builder(
       itemCount: clientes!.length,
       itemBuilder: (_, index) {
@@ -94,16 +98,31 @@ class ClientListViewState extends State<ClientListView> {
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
-            contentPadding: const EdgeInsets.all(10.0), // padding del listtile
-            tileColor: const Color.fromARGB(255, 43, 42, 42), // color del fondo
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: 10.0, vertical: 5), // padding del listtile
+            //tileColor: const Color.fromARGB(255, 43, 42, 42), // color del fondo
             leading: AspectRatio(
               aspectRatio: 0.9,
               child: Image.asset(_defaultClientImage),
             ),
             title: Text('${client.nameClient}',
                 style: Theme.of(context).textTheme.titleLarge),
+            subtitle: Row(
+              children: [
+                const Icon(Icons.numbers),
+                Text('${client.numberPhone}')
+              ],
+            ),
             trailing: Text('${client.numberPhone} '),
-            onTap: () => onClientForm(context, idClient: client.id ?? client.uid),
+            onTap: () {
+              if (returnClient) {
+                log('Retornando cliente ...');
+                log(client.toString());
+                Navigator.pop(context, client);
+              } else {
+                _onClientForm(context, idClient: client.id ?? client.uid);
+              }
+            },
           ),
         );
       },

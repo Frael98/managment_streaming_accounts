@@ -10,12 +10,12 @@ import 'package:f_managment_stream_accounts/forms/components/custom_time_picker.
 import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:f_managment_stream_accounts/models/type_account.dart';
-import 'package:f_managment_stream_accounts/providers/time_provider.dart';
+//import 'package:f_managment_stream_accounts/providers/time_provider.dart';
 import 'package:f_managment_stream_accounts/utils/constantes.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import 'package:provider/provider.dart';
+//import 'package:provider/provider.dart';
 
 class AccountFormScreen extends StatefulWidget {
   const AccountFormScreen({super.key});
@@ -69,7 +69,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cuentas'),
+        title: const Text('Cuenta'),
       ),
       body: _plataformas.isEmpty || _typesAccount.isEmpty
           ? const Center(child: CircularProgressIndicator())
@@ -290,7 +290,8 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
         typeAccount: TypeAccount.id(
             uid: mongo.ObjectId.fromHexString(_typeAccount.text)),
         perfilQuantity: int.parse(capacidad),
-        price: precio as double);
+        price: double.parse(precio),
+        state: StateAccount.available.nombre);
 
     log(account.toString());
 
@@ -303,6 +304,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     }
   }
 
+  /// Calcular el tiempo de comprando de la cuenta
   void calcularTiempoComprado() {
     // Obtener las fechas de inicio y término
     DateTime fechaInicio = Format.dateShortString(_fechaInicioController.text);

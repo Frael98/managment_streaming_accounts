@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/forms/components/custom_dropdown_field.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
 import 'package:f_managment_stream_accounts/forms/plataforma/platform_list.dart';
@@ -76,15 +75,19 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
                   labelText: 'Descripcion', controller: _descriptionController),
             ),
             //const CustomDropDownField(),
-            CustomElevatedButton(
-                color: Colors.deepOrange,
-                title: "Eliminar",
-                function: () async {
-                  // if (_formkey3.currentState != null &&
-                  //     _formkey3.currentState!.validate()) {
-                  //await Updatetask(widget.docId, context);
-                  // }
-                })
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              child: CustomElevatedButton(
+                  color: Colors.red,
+                  title: "Eliminar",
+                  //isIcon: true,
+                  function: () async {
+                    await Future.delayed(const Duration(seconds: 2), () {
+                      // Código para ejecutar después de 2 segundos
+                      log('¡Esta línea se imprimirá después de 10 segundos!');
+                    });
+                  }),
+            ),
           ],
         ),
       ),

@@ -90,7 +90,8 @@ class Account extends Entity {
             TypeAccount.fromMap(map['TYPE_ACCOUNT'] ?? map['type_account']),
         perfilQuantity: map['PERFIL_QUANTITY'] ?? map['perfil_quantity'],
         price: map['PRICE'] ?? map['price'] ?? 0.0,
-        timeLimit: map['TIME_LIMIT'] ?? map['time_limit'] ?? '');
+        timeLimit: map['TIME_LIMIT'] ?? map['time_limit'] ?? '',
+        state: map['STATE'] ?? map['state']);
   }
 
   factory Account.fromMapForSQLite(Map<String, dynamic> map) {
@@ -111,7 +112,7 @@ class Account extends Entity {
 
   @override
   String toString() {
-    return "Account(uid(MongoId): $uid, id(SQLite): $id, email: $email, password: $password, expiredDate: $expireDate, registerDate: $registerDate, platform: ${platform.toString()}, typeAccount: ${typeAccount.toString()}, perfilQuantity: $perfilQuantity)";
+    return "Account(uid(MongoId): $uid, id(SQLite): $id, email: $email, password: $password, expiredDate: $expireDate, registerDate: $registerDate, platform: ${platform.toString()}, typeAccount: ${typeAccount.toString()}, perfilQuantity: $perfilQuantity, state: $state)";
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:f_managment_stream_accounts/controllers/mongo/account_controller
 import 'package:f_managment_stream_accounts/forms/components/custom_date_picker.dart';
 import 'package:f_managment_stream_accounts/forms/cuentas/account_form.dart';
 import 'package:f_managment_stream_accounts/models/account.dart';
+import 'package:f_managment_stream_accounts/utils/constantes.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -12,7 +13,8 @@ import 'package:mongo_dart/mongo_dart.dart' as mongo;
 //import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AccountListView extends StatefulWidget {
-  const AccountListView({super.key});
+  bool returnAccount;
+  AccountListView({super.key, this.returnAccount = false});
   @override
   State<StatefulWidget> createState() {
     return AccountListViewState();
@@ -21,6 +23,7 @@ class AccountListView extends StatefulWidget {
 
 class AccountListViewState extends State<AccountListView> {
   Future<List<Account>>? accounts;
+  bool _isExpanded = false;
 
   @override
   void initState() {
@@ -95,16 +98,53 @@ class AccountListViewState extends State<AccountListView> {
             child: Padding(
               padding: const EdgeInsets.all(2),
               child: ExpansionTile(
+                trailing: widget.returnAccount
+                    ? IconButton(
+                        onPressed: () {
+                          log('retornando objectos');
+                          log(cuentas[index].toString());
+                          Navigator.pop(context, cuentas[index]);
+                        },
+                        icon: const Icon(Icons.add))
+                    : Icon(_isExpanded
+                        ?  Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down),
+                onExpansionChanged: (bool expanded) {
+                  setState(() {
+                    _isExpanded = expanded;
+                  });
+                },
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
-                childrenPadding: const EdgeInsets.all(5),
+                childrenPadding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                 //backgroundColor: Colors.grey,
                 leading: const Icon(Icons.account_circle),
                 title: Text(
                   cuentas[index].email,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.green),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isNull(cuentas[index].state)
+                          ? colorStates[cuentas[index].state]
+                          : Colors.grey),
+                ),
+                subtitle: Row(
+                  children: [
+                    const Icon(
+                      Icons.event_seat_rounded,
+                      size: 18,
+                    ),
+                    Text('${cuentas[index].perfilQuantity}'),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    const Icon(
+                      Icons.attach_money,
+                      size: 18,
+                    ),
+                    Text('${cuentas[index].price}')
+                  ],
                 ),
                 children: [
                   Padding(
@@ -196,11 +236,11 @@ class AccountListViewState extends State<AccountListView> {
                       ],
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.all(5),
+                  Padding(
+                    padding: const EdgeInsets.all(5),
                     child: Row(
                       children: [
-                        Text(
+                        const Text(
                           'Estado: ',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -208,8 +248,9 @@ class AccountListViewState extends State<AccountListView> {
                           textAlign: TextAlign.center,
                         ),
                         Text(
-                          'Totalmente Ocupado',
-                          style: TextStyle(color: Colors.green),
+                          '${cuentas[index].state}',
+                          style: TextStyle(
+                              color: colorStates[cuentas[index].state]),
                         )
                       ],
                     ),

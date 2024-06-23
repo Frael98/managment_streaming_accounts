@@ -19,7 +19,7 @@ class User extends Entity {
     required this.email,
     this.age,
     required this.password,
-    String? state,
+    state,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,

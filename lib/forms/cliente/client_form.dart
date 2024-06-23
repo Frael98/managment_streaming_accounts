@@ -1,10 +1,14 @@
 import 'dart:developer';
+import 'dart:io';
 //import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
 // ignore: must_be_immutable
@@ -18,6 +22,8 @@ class ClientFormScreen extends StatefulWidget {
 }
 
 class _ClientFormScreenState extends State<ClientFormScreen> {
+  File? _image;
+  final ImagePicker _imagePicker = ImagePicker();
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
   dynamic idCliente = 0;
   final TextEditingController _nameClientController = TextEditingController();
@@ -51,74 +57,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Clientes'),
-      ),
-      body: Form(
-        key: _key,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: TextFormField(
-                maxLength: 25,
-                decoration: const InputDecoration(
-                    labelText: 'Nombres*',
-                    labelStyle: TextStyle(color: Colors.blue),
-                    //filled: true,
-                    contentPadding: EdgeInsets.all(15.0)),
-                controller: _nameClientController,
-                validator: messageValidator,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: TextFormField(
-                maxLength: 10,
-                decoration: const InputDecoration(
-                  labelText: 'Número celular*',
-                  contentPadding: EdgeInsets.all(15.0),
-                ),
-                controller: _numberPhoneController,
-                validator: messageValidator,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: TextFormField(
-                maxLength: 35,
-                decoration: const InputDecoration(
-                  labelText: 'Dirección',
-                  contentPadding: EdgeInsets.all(15.0),
-                ),
-                controller: _directionController,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: TextFormField(
-                maxLength: 25,
-                decoration: const InputDecoration(
-                  labelText: 'Email*',
-                  contentPadding: EdgeInsets.all(15.0),
-                ),
-                controller: _emailController,
-                validator: validateEmail,
-              ),
-            ),
-            ElevatedButton(
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.deepOrange),
-              ),
-              onPressed: () {
-                //deleteClient(context);
-                showDialogMessage(context,
-                    title: '¿Esta seguro que desea eliminar este usuario?',
-                    callbackYes: deleteClient);
-              },
-              child: const Text('Eliminar cliente'),
-            ),
-          ],
-        ),
+        title: const Text('Cliente'),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.save),
@@ -132,6 +71,97 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
             }
           }
         },
+      ),
+      body: SingleChildScrollView(
+        child: formClient(context),
+      ),
+    );
+  }
+
+  Widget formClient(BuildContext context) {
+    return Form(
+      key: _key,
+      child: Column(
+        children: [
+          Card(
+            elevation: 4.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: _image != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Image.file(
+                      _image!,
+                      height: 200,
+                      width: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Container(
+                    height: 200,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.grey[200],
+                    ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      size: 64.0,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+          ),
+          ElevatedButton.icon(
+            onPressed: _escogerImagen,
+            icon: const Icon(Icons.image),
+            label: const Text('Seleccionar Imagen'),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+            child: CustomTextFormField(
+              labelText: 'Nombres',
+              controller: _nameClientController,
+              validator: messageValidator,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+            child: CustomTextFormField(
+              labelText: 'Número celular',
+              controller: _numberPhoneController,
+              validator: messageValidator,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+            child: CustomTextFormField(
+              labelText: 'Dirección',
+              controller: _directionController,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+            child: CustomTextFormField(
+              labelText: 'Correo',
+              controller: _emailController,
+              validator: validateEmail,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            child: CustomElevatedButton(
+              function: () async {
+                //deleteClient(context);
+                showDialogMessage(context,
+                    title: '¿Esta seguro que desea eliminar este usuario?',
+                    callbackYes: deleteClient);
+              },
+              color: Colors.red,
+              title: 'Eliminar',
+            ),
+          )
+        ],
       ),
     );
   }
@@ -221,9 +251,19 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const ClientListView(),
+        builder: (context) => ClientListView(),
       ),
     );
   }
 
+  void _escogerImagen() async {
+    final file = await _imagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (file != null) {
+        _image = File(file.path);
+      } else {
+        log('No selecciono ninguna imagen');
+      }
+    });
+  }
 }//End class

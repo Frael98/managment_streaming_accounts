@@ -1,9 +1,12 @@
 import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_card.dart';
 import 'package:f_managment_stream_accounts/forms/plataforma/platform_form.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
+import 'package:f_managment_stream_accounts/utils/constantes.dart';
 import 'package:flutter/material.dart';
+import 'dart:math'as math;
 
 class PlatformListView extends StatefulWidget {
   const PlatformListView({super.key});
@@ -74,7 +77,11 @@ class _PlatformListViewState extends State<PlatformListView> {
         (index) {
           final platform = platforms[index];
 
-          return _SampleCard(cardName: platform.namePlatform!, function: () => onPlatformForm(idPlatform: platform.uid, context));
+          return CustomCard(
+              cardName: platform.namePlatform!,
+              function: () =>
+                  onPlatformForm(idPlatform: platform.uid, context),
+                  color: colorsLinear[math.Random().nextInt(colorsLinear.length)],);
         },
       ),
     );
@@ -91,35 +98,4 @@ class _PlatformListViewState extends State<PlatformListView> {
       ),
     );
   }
-
-
 } // End class
-
-/// probando SizeBox como Card
-class _SampleCard extends StatelessWidget {
-  const _SampleCard({required this.cardName, this.function});
-  final String cardName;
-  final Function()? function;
-
-  @override
-  Widget build(BuildContext context) {
-    /* return SizedBox(
-      width: 300,
-      height: 100,
-      child: Center(child: Text(cardName)),
-    ); */
-
-    return Card(
-      child: InkWell(
-        child: Center(
-          child: Text(cardName),
-        ),
-        onTap: () {
-          if (function != null) {
-            function!();
-          }
-        },
-      ),
-    );
-  }
-}

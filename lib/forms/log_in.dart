@@ -1,10 +1,12 @@
 import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/user_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
 //import 'package:f_managment_stream_accounts/controllers/sqlite/user_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/forms/home.dart';
 import 'package:f_managment_stream_accounts/forms/sign_up.dart';
 import 'package:f_managment_stream_accounts/models/user.dart';
+import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 
@@ -133,15 +135,29 @@ class LogInState extends State<LogIn> {
           const SizedBox(
             height: 20,
           ),
-          ElevatedButton(onPressed: logIn, child: const Text('Iniciar sesión')),
-          ElevatedButton(
-              onPressed: () {
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+            child: CustomElevatedButton(
+              function: () async {
+                logIn();
+              },
+              color: Colors.blue,
+              title: 'Iniciar Sesión',
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+            child: CustomElevatedButton(
+              color: Colors.blueGrey,
+              function: () async {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const SignUpScreen()));
               },
-              child: const Text('Registrarse')),
+              title: 'Registrarse',
+            ),
+          ),
         ],
       ),
     );

@@ -4,7 +4,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 /// Subscripcion
 class Subscription extends Entity {
   final ObjectId _idAccount;
-  final String _idClient;
+  final List<ObjectId> _clients;
   final DateTime _dateStarted;
   final DateTime _dateFinish;
   final double _valueToPay;
@@ -13,16 +13,16 @@ class Subscription extends Entity {
     uid,
     id,
     required ObjectId idAccount,
-    required String idClient,
+    required List<ObjectId> clients,
     required DateTime dateStarted,
     required DateTime dateFinish,
     required double valueToPay,
-    String? state,
+    state,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
   })  : _idAccount = idAccount,
-        _idClient = idClient,
+        _clients = clients,
         _dateStarted = dateStarted,
         _dateFinish = dateFinish,
         _valueToPay = valueToPay,
@@ -39,7 +39,7 @@ class Subscription extends Entity {
         uid: map['_id'],
         id: map['id_subscription'] ?? map['ID_SUBSCRIPTION'],
         idAccount: map['id_account'] ?? map['ID_ACCOUNT'],
-        idClient: map['id_client'] ?? map['ID_CLIENT'],
+        clients: map['id_client'] ?? map['ID_CLIENT'],
         dateStarted: map['date_started'] ?? map['DATE_STARTED'],
         dateFinish: map['date_finish'] ?? map['DATE_FINISH'],
         valueToPay: map['value_to_pay'] ?? map['VALUE_TO_PAY']);
@@ -49,7 +49,7 @@ class Subscription extends Entity {
   Map<String, dynamic> toMap() {
     return {
       'id_account': idAccount,
-      'id_client': idClient,
+      'id_client': clients,
       'date_started': dateStarted,
       'date_finish': dateFinish,
       'value_to_pay': valueToPay,
@@ -63,21 +63,21 @@ class Subscription extends Entity {
   // Getter methods
   //String? get idSubscription => _idSubscription;
   ObjectId get idAccount => _idAccount;
-  String get idClient => _idClient;
+  List<ObjectId> get clients => _clients;
   DateTime get dateStarted => _dateStarted;
   DateTime get dateFinish => _dateFinish;
   double get valueToPay => _valueToPay;
 
   @override
   String toString() {
-    return "Subscription(uid(MongoId): $uid, id(SQLite); $id, idAccount: $idAccount, idClient: $idClient, dateStarted: $dateStarted, dateFinish: $dateFinish, valueToPay: $valueToPay)";
+    return "Subscription(uid(MongoId): $uid, id(SQLite); $id, idAccount: $idAccount, idClient: ${_clients.toString()}, dateStarted: $dateStarted, dateFinish: $dateFinish, valueToPay: $valueToPay)";
   }
 
   @override
   Map<String, dynamic> toMapForSQLite() {
     return {
       'id_account': idAccount,
-      'id_client': idClient,
+      'id_client': _clients,
       'date_started': dateStarted.toIso8601String(),
       'date_finish': dateFinish.toIso8601String(),
       'value_to_pay': valueToPay

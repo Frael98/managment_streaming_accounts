@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:f_managment_stream_accounts/models/account.dart';
-import 'package:f_managment_stream_accounts/models/platform.dart';
+//import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 void main() async {

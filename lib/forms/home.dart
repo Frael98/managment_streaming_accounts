@@ -1,10 +1,11 @@
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_expansion_tile.dart';
-import 'package:f_managment_stream_accounts/forms/cuentas/account_form.dart';
 import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
 import 'package:f_managment_stream_accounts/forms/log_in.dart';
 import 'package:f_managment_stream_accounts/forms/plataforma/platform_list.dart';
+import 'package:f_managment_stream_accounts/forms/subscripcion/subscription_list.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:toast/toast.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -65,7 +66,7 @@ class HomeScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const ClientListView(),
+              builder: (context) => ClientListView(),
             ),
           );
         },
@@ -77,7 +78,19 @@ class HomeScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const AccountListView(),
+              builder: (context) => AccountListView(),
+            ),
+          );
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.shop_rounded),
+        title: const Text('Suscripciones'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SubscriptionListView(),
             ),
           );
         },

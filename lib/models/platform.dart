@@ -69,7 +69,6 @@ class Platform extends Entity {
 
   @override
   Map<String, dynamic> toMapForSQLite() {
-    // TODO: implement toMapForSQLite
     throw UnimplementedError();
   }
 }
