@@ -4,20 +4,21 @@
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:f_managment_stream_accounts/models/type_account.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 
 class Account extends Entity {
-  String email;
-  String password;
-  DateTime registerDate;
-  DateTime expireDate;
-  Platform platform;
-  TypeAccount typeAccount;
-  int perfilQuantity;
+  String? email;
+  String? password;
+  DateTime? registerDate;
+  DateTime? expireDate;
+  Platform? platform;
+  TypeAccount? typeAccount;
+  int? perfilQuantity;
   double? price;
   String? timeLimit;
 
   Account(
-      {uid,
+      {ObjectId? uid,
       id,
       required this.email,
       required this.password,
@@ -40,6 +41,8 @@ class Account extends Entity {
             updatedAt: updatedAt,
             deletedAt: deletedAt);
 
+  Account.uid({uid}) : super(uid: uid);
+
   @override
   Map<String, dynamic> toMap() {
     return {
@@ -47,8 +50,8 @@ class Account extends Entity {
       'password': password,
       'register_date': registerDate,
       'expire_date': expireDate,
-      'platform': platform.uid,
-      'type_account': typeAccount.uid,
+      'platform': platform!.uid,
+      'type_account': typeAccount!.uid,
       'perfil_quantity': perfilQuantity,
       'price': price,
       'time_limit': timeLimit,
@@ -120,8 +123,8 @@ class Account extends Entity {
     return {
       'email': email,
       'password': password,
-      'registerDate': registerDate.toIso8601String(),
-      'expire_date': expireDate.toIso8601String(),
+      'registerDate': registerDate!.toIso8601String(),
+      'expire_date': expireDate!.toIso8601String(),
       'platform': platform,
       'type_account': typeAccount,
       'perfil_quantity': perfilQuantity,
