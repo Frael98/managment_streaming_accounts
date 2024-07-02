@@ -108,6 +108,7 @@ class AccountControllerMongo {
     return result.map((account) => Account.fromMap(account)).toList();
   }
 
+  /// Listado de cuentas
   static Future<List<Account>> getAccountsList() async {
     final collectionAccount = await _getCollection();
     final lookupTypeAccount = Lookup(
@@ -126,6 +127,43 @@ class AccountControllerMongo {
     final unwind2 = Unwind(const Field('platform'));
 
     final pipeline = AggregationPipelineBuilder()
+        .addStage(lookupTypeAccount)
+        .addStage(unwind)
+        .addStage(lookupPlatform)
+        .addStage(unwind2)
+        .build();
+
+    var result = await collectionAccount?.aggregateToStream(pipeline).toList();
+
+    return result!.map((account) => Account.fromMapObject(account)).toList();
+  }
+
+  static Future<List<Account>> getAccountsConCapacidad() async {
+    final collectionAccount = await _getCollection();
+
+    final match = Match({
+      'state': {
+        '\$nin': ['caida', 'ocupada']
+      }
+    });
+
+    final lookupTypeAccount = Lookup(
+        from: "type_account",
+        localField: "type_account",
+        foreignField: "_id",
+        as: "type_account");
+
+    final lookupPlatform = Lookup(
+        from: "platform",
+        localField: "platform",
+        foreignField: "_id",
+        as: "platform");
+
+    final unwind = Unwind(const Field('type_account'));
+    final unwind2 = Unwind(const Field('platform'));
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(match)
         .addStage(lookupTypeAccount)
         .addStage(unwind)
         .addStage(lookupPlatform)

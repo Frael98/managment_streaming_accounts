@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/db/mongo/mongo_db.dart';
 import 'package:f_managment_stream_accounts/models/subscription.dart';
+import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 /// Subscripcion controlador
@@ -20,7 +21,7 @@ class SubscriptionControllerMongo {
     return null;
   }
 
-  static Future<String> addAccount(Subscription subscription) async {
+  static Future<String> addSubscription(Subscription subscription) async {
     final collection = await _getCollection();
     var result = await collection!.insertOne(subscription.toMap());
 
@@ -30,7 +31,7 @@ class SubscriptionControllerMongo {
     return "Error no se pudo agregar ${result.errmsg}";
   }
 
-  static Future<String> updateAccount(Subscription subscription) async {
+  static Future<String> updateSubscription(Subscription subscription) async {
     final collection = await _getCollection();
     var result = await collection!.updateOne(
       where.eq('_id', subscription.uid),
@@ -46,7 +47,7 @@ class SubscriptionControllerMongo {
     return "Error no se pudo actualizar ${result.errmsg}";
   }
 
-  static Future<String> deleteAccount(ObjectId uid) async {
+  static Future<String> deleteSubscription(ObjectId uid) async {
     final collection = await _getCollection();
     var result = await collection!.deleteOne({'_id': uid});
 
@@ -56,22 +57,54 @@ class SubscriptionControllerMongo {
     return "Error no se pudo eliminar subscription ${result.errmsg}";
   }
 
-  static Future<Subscription> getAccount(ObjectId uid) async {
+  static Future<Subscription> getSubscription(ObjectId uid) async {
     final collection = await _getCollection();
     var result = await collection!.findOne({'_id': uid});
 
-    return Subscription.fromMap(result!);
+    return Subscription.fromMapObject(result!);
   }
 
-  static Future<List<Subscription>> getAccounts(
-      Subscription subscription) async {
+  static Future<List<Subscription>> getSubscriptionsList() async {
     final collection = await _getCollection();
-    var result = await collection!.find().toList();
 
-    log(result.first.toString());
+    final lookupClients = Lookup(
+        from: "clients",
+        localField: "clients",
+        foreignField: "_id",
+        as: "clients");
 
-    return result
-        .map((subscription) => Subscription.fromMap(subscription))
+    final lookupAccount = Lookup(
+        from: "account",
+        localField: "account",
+        foreignField: "_id",
+        as: "account");
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(lookupClients)
+        //.addStage(unwind)
+        .addStage(lookupAccount)
+        //.addStage(unwind2)
+        .build();
+
+    var result = await collection?.aggregateToStream(pipeline).toList();
+    return result!
+        .map((subscription) => Subscription.fromMapObject(subscription))
         .toList();
+  }
+
+  static Future<String> requestLastSubscription() async {
+    final collection = await _getCollection();
+    final result = await collection!.find().last;
+
+    if (!isNotNull(result)) {
+      return '000000001';
+    }
+
+    String codSubscription = result['cod_subscription'];
+    var numberSubs = codSubscription.split('-')[1];
+
+    var numeracion = (int.parse(numberSubs) + 1);
+    numberSubs = numeracion.toString().padLeft(8, '0');
+    return numberSubs;
   }
 }
