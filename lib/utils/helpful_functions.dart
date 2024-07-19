@@ -3,7 +3,7 @@ import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:toast/toast.dart';
 
 /// Verifica si un objeto es nulo
-bool isNull(Object? object) {
+bool isNotNull(Object? object) {
   return object != null;
 }
 
@@ -63,17 +63,17 @@ void showDialogMessage(BuildContext context,
   showPlatformDialog(
       context: context,
       builder: (_) => BasicDialogAlert(
-            title: Text(isNull(title) ? title : 'Mensaje',
+            title: Text(isNotNull(title) ? title : 'Mensaje',
                 style: const TextStyle(fontSize: 20),
                 textAlign: TextAlign.start),
             actions: [
               BasicDialogAction(
                 title: Text(
-                  isNull(titleActionTwo) ? titleActionTwo : 'No',
+                  isNotNull(titleActionTwo) ? titleActionTwo : 'No',
                   style: const TextStyle(fontSize: 22),
                 ),
                 onPressed: () {
-                  if (isNull(callbackNo)) {
+                  if (isNotNull(callbackNo)) {
                     callbackNo!();
                   }
                   Navigator.pop(context);
@@ -81,11 +81,11 @@ void showDialogMessage(BuildContext context,
               ),
               BasicDialogAction(
                 title: Text(
-                  isNull(titleActionOne) ? titleActionOne : 'Sí',
+                  isNotNull(titleActionOne) ? titleActionOne : 'Sí',
                   style: const TextStyle(fontSize: 22),
                 ),
                 onPressed: () {
-                  if (isNull(callbackYes)) {
+                  if (isNotNull(callbackYes)) {
                     callbackYes!();
                   } else {
                     showToast('Aceptado');
@@ -106,4 +106,11 @@ String? validateInt(value) {
     return 'Debe ser un número válido.';
   }
   return null; // Todo está bien
+}
+
+String? validatorCombo<T>(T? value) {
+  if (value == null) {
+    return 'Por favor, seleccione una opción';
+  }
+  return null; // La validación pasó correctamente
 }
