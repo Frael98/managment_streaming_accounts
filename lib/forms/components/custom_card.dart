@@ -11,10 +11,11 @@ class CustomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.transparent,
       elevation: 4,
-      /* shape: RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
-      ), */
+      ),
       margin: const EdgeInsets.all(10.0),
       child: InkWell(
         borderRadius: BorderRadius.circular(10.0),

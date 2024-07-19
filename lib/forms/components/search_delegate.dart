@@ -1,6 +1,10 @@
 // ignore_for_file: overridden_fields
 
+import 'dart:developer';
+
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
+import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
+import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:flutter/material.dart';
 
@@ -20,17 +24,25 @@ class SearchFieldDelegate<T> extends SearchDelegate<T> {
   @override
   final String searchFieldLabel = 'Buscar...';
 
-  SearchFieldDelegate(this.data, this.getData );//, this.historial);
+  bool returnData;
+
+  final AccountListViewState? state;
+
+  SearchFieldDelegate(this.data, this.getData,
+      {this.returnData = false, this.state}); //, this.historial);
 
   ///Acciones
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      IconButton(
-          onPressed: () {
-            query = "";
-          },
-          icon: const Icon(Icons.clear))
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: IconButton(
+            onPressed: () {
+              query = "";
+            },
+            icon: const Icon(Icons.clear)),
+      )
     ];
   }
 
@@ -38,49 +50,60 @@ class SearchFieldDelegate<T> extends SearchDelegate<T> {
   Widget? buildLeading(BuildContext context) {
     return IconButton(
         onPressed: () {
-          close(context, data.first);
+          Navigator.of(context).pop(null);
         },
         icon: const Icon(Icons.arrow_back));
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    return SearchResultsWidget<T>(data: this.filterData);
+    filterData = data.where((d) {
+      return getData(d).toLowerCase().contains(query.toLowerCase().trim());
+    }).toList();
+    return SearchResultsWidget<T>(
+      data: this.filterData,
+      returnData_: returnData,
+      state: state!,
+    );
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    filterData = data.where((d) {
-      return getData(d).toLowerCase().contains(query.toLowerCase().trim());
-    }).toList();
-    return SearchResultsWidget<T>(data: filterData);
+    return SearchResultsWidget<T>(
+      data: this.filterData,
+      returnData_: returnData,
+      state: state!,
+    );
   }
 }
 
 class SearchResultsWidget<T> extends StatelessWidget {
   final List<T> data;
+  final bool returnData_;
 
-  const SearchResultsWidget({super.key, required this.data});
+  final AccountListViewState state; // temporal
+  const SearchResultsWidget(
+      {super.key, required this.data, this.returnData_ = false, required this.state});
 
   @override
   Widget build(BuildContext context) {
     if (data is List<Client>) {
       return ClientListViewState.buildClientTile(context, data as List<Client>);
     }
-    /* final filteredData = data.where((d) {
-      return getData(d).toLowerCase().contains(query.toLowerCase());
-    }).toList();
 
-    return ListView.builder(
-      itemCount: filteredData.length,
-      itemBuilder: (context, index) {
-        final result = filteredData[index];
-        return ListTile(
-          title: Text(getData(result)),
-          onTap: () => onTap(result),
-        );
-      },
-    ); */
-    return const Text("No hay datos");
+    if (data is List<Account>) {
+      return state.buildAccountList(context, data as List<Account>);
+    }
+
+    return const Center(
+      child: Card(
+        elevation: 5,
+        margin: EdgeInsets.all(5),
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Text("No hay datos"),
+        ),
+      ),
+    );
   }
 }

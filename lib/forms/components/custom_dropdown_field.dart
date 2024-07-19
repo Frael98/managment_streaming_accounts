@@ -16,6 +16,8 @@ class CustomDropDownField<T> extends StatefulWidget {
   String labelText;
   String hintText;
 
+ final String? Function(T?)? validator;
+
   CustomDropDownField({
     super.key,
     required this.items,
@@ -24,6 +26,7 @@ class CustomDropDownField<T> extends StatefulWidget {
     required this.displayText,
     required this.valueText,
     this.controller,
+    this.validator
   });
 
   @override
@@ -33,7 +36,7 @@ class CustomDropDownField<T> extends StatefulWidget {
 
 class _CustomDropDownButtonState<T> extends State<CustomDropDownField<T>> {
   List<T> _options = [];
-  late T? _selectedItem;
+  T? _selectedItem;
 
   @override
   void initState() {
@@ -60,14 +63,14 @@ class _CustomDropDownButtonState<T> extends State<CustomDropDownField<T>> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      //padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
-      value: null,
+      validator: widget.validator,
+      value: _selectedItem,
       icon: const Icon(Icons.arrow_downward),
       iconSize: 24,
       elevation: 16,
       style: const TextStyle(color: Colors.white),
       onChanged: (T? newValue) {
-        //log(newValue.toString());
+        log(newValue.toString());
         setState(() {
           _selectedItem = newValue;
           widget.controller!.text = widget.valueText(newValue as T);
