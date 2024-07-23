@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:f_managment_stream_accounts/db/mongo/mongo_db.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
@@ -60,7 +63,8 @@ class ClientControllerMongo {
           .set('number_phone', client.numberPhone)
           .set('direction', client.direction)
           .set('email', client.email)
-          .set('updated_at', client.updatedAt),
+          .set('updated_at', client.updatedAt)
+          .set('imagen_id', client.imagen),
     );
 
     if (result.isSuccess) {
@@ -69,7 +73,7 @@ class ClientControllerMongo {
     return "Error no se pudo actualizar el cliente ${result.errmsg}";
   }
 
- static Future<String> deleteClient(ObjectId uid) async {
+  static Future<String> deleteClient(ObjectId uid) async {
     final collection = await _getClientCollection();
     var result = await collection!.deleteOne({'_id': uid});
 
@@ -79,4 +83,50 @@ class ClientControllerMongo {
     return "Error no se pudo eliminar cliente ${result.errmsg}";
   }
 
+  ///Guardar imagen de cliente
+  static Future<ObjectId> saveImageClient(File file) async {
+    Db? db = await MongoConnection().getConnection();
+    await db!.open();
+
+    final gridfs = GridFS(db);
+    // Creamos el archivo
+    final fileId =
+        gridfs.createFile(file.openRead(), file.path.split('/').last);
+    // Guardamos el archivo
+    await fileId.save();
+
+    await db.close();
+
+    return fileId.id;
+  }
+
+  ///Guardar imagen de cliente
+  static Future<String> updateImageClient(File file, ObjectId fileId) async {
+    Db? db = await MongoConnection().getConnection();
+    await db!.open();
+
+    final gridfs = GridFS(db);
+
+    final result =  await gridfs.chunks.updateOne(where.eq('files_id', fileId), modify.set('data', await file.readAsBytes()));
+    //final result = await gridfs.findOne(where.eq('file_id', fileId));
+
+    await db.close();
+
+    return result.isSuccess.toString();
+  }
+
+  ///Obtenen imagen de cliente
+  static Future<dynamic> getClientImage(ObjectId imageId) async {
+    Db? db = await MongoConnection().getConnection();
+    await db!.open();
+
+    final gridfs = GridFS(db);
+    var file = await gridfs.chunks.findOne(where.eq('files_id', imageId));
+    //Obtenenmos los datos  BsonBinary
+    BsonBinary data = file!['data'];
+
+    await db.close();
+    //Enviamos los datos BsonBinary en tipo byteList
+    return Uint8List.fromList(data.byteList);
+  }
 }
