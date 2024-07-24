@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 //import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
@@ -22,10 +23,13 @@ class ClientFormScreen extends StatefulWidget {
 }
 
 class _ClientFormScreenState extends State<ClientFormScreen> {
-  File? _image;
   final ImagePicker _imagePicker = ImagePicker();
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
-  dynamic idCliente = 0;
+  //Campos
+  File? _image;
+  Uint8List? _imagenAlmacenada;
+  dynamic idCliente;
+  dynamic idImagenAlmacenada;
   final TextEditingController _nameClientController = TextEditingController();
   final TextEditingController _numberPhoneController = TextEditingController();
   final TextEditingController _directionController = TextEditingController();
@@ -38,13 +42,21 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     _emailController = TextEditingController();
   }
 
+  ///Obtener cliente si viene de list
   Future<void> obtenerClienteAsync() async {
     if (widget.idClient != 0) {
       //Client? cliente = await ClientControllerSQLite.getClient(widget.idClient);
       Client? cliente = await ClientControllerMongo.getClient(widget.idClient);
       log(cliente.toString());
+      if (isNotNull(cliente.imagen)) {
+        log('Entra aqui en imagen');
+        _imagenAlmacenada =
+            await ClientControllerMongo.getClientImage(cliente.imagen!);
+        //log(_imagenAlmacenada.toString());
+      }
       setState(() {
         idCliente = cliente.id ?? cliente.uid;
+        idImagenAlmacenada = cliente.imagen;
       });
       _nameClientController.text = cliente.nameClient!;
       _numberPhoneController.text = cliente.numberPhone!;
@@ -78,6 +90,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     );
   }
 
+  /// Formulario de cliente
   Widget formClient(BuildContext context) {
     return Form(
       key: _key,
@@ -88,29 +101,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
             ),
-            child: _image != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: Image.file(
-                      _image!,
-                      height: 200,
-                      width: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : Container(
-                    height: 200,
-                    width: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      color: Colors.grey[200],
-                    ),
-                    child: Icon(
-                      Icons.camera_alt,
-                      size: 64.0,
-                      color: Colors.grey[800],
-                    ),
-                  ),
+            child: displayImage(),
           ),
           ElevatedButton.icon(
             onPressed: _escogerImagen,
@@ -166,6 +157,44 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     );
   }
 
+  /// Mostrar imagen de la bd
+  Widget displayImage() {
+    if (_image != null) {
+      return ClipRRect(
+          borderRadius: BorderRadius.circular(10.0),
+          child: Image.file(
+            _image!,
+            height: 200,
+            width: 200,
+            fit: BoxFit.cover,
+          ));
+    } else if (_imagenAlmacenada != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.memory(
+          _imagenAlmacenada!,
+          height: 200,
+          width: 200,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      return Container(
+        height: 200,
+        width: 200,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: Colors.grey[200],
+        ),
+        child: Icon(
+          Icons.camera_alt,
+          size: 64.0,
+          color: Colors.grey[800],
+        ),
+      );
+    }
+  }
+
   /// Limpiar campos
   void limpiarTexts() {
     _nameClientController.text = '';
@@ -181,13 +210,19 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     String direction = _directionController.text.trim();
     String email = _emailController!.text.trim();
 
+    mongo.ObjectId? imagenId;
+    if (_image != null) {
+      imagenId = await ClientControllerMongo.saveImageClient(_image!);
+    }
+
     Client newClient = Client(
         nameClient: name,
         numberPhone: number,
         direction: direction,
         email: email,
         state: 'A',
-        createdAt: DateTime.now().toIso8601String());
+        createdAt: DateTime.now().toIso8601String(),
+        imagen: imagenId);
 
     try {
       //var message = await ClientControllerSQLite.addClient(newClient);
@@ -209,6 +244,17 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
     String direction = _directionController.text.trim();
     String email = _emailController!.text.trim();
 
+    mongo.ObjectId? imagenId;
+    if (_image != null && idImagenAlmacenada != null) {
+      var msg = await ClientControllerMongo.updateImageClient(
+          _image!, idImagenAlmacenada);
+      log('Mensaje actualizar $msg');
+    } else {
+      if (_image != null) {
+        imagenId = await ClientControllerMongo.saveImageClient(_image!);
+      }
+    }
+
     /// Aqui se crea un nuevo objeto con el id, el toMap() solo hara que los campos necesarios se actualizen
     Client newClient = Client(
         uid: idCliente is mongo.ObjectId ? idCliente : null,
@@ -217,6 +263,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         numberPhone: number,
         direction: direction,
         email: email,
+        imagen: idImagenAlmacenada ?? imagenId, // no es necesario
         updatedAt: DateTime.now());
     log(newClient.toString());
     try {
@@ -225,6 +272,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
       if (!message.toLowerCase().contains("error")) {
         limpiarTexts();
       }
+
       showToast(message);
       goToClientList();
     } catch (e) {
@@ -248,19 +296,21 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
 
   /// Navegar a lista de clientes
   void goToClientList() {
-    Navigator.pushReplacement(
+    /* Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => ClientListView(),
       ),
-    );
+    ); */
+    Navigator.pop(context);
   }
 
   void _escogerImagen() async {
-    final file = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final img = await _imagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
-      if (file != null) {
-        _image = File(file.path);
+      if (img != null) {
+        log(img.path);
+        _image = File(img.path);
       } else {
         log('No selecciono ninguna imagen');
       }
