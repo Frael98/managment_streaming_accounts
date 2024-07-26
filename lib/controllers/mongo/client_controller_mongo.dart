@@ -1,4 +1,4 @@
-import 'dart:convert';
+//import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -73,6 +73,7 @@ class ClientControllerMongo {
     return "Error no se pudo actualizar el cliente ${result.errmsg}";
   }
 
+  ///Eliminar cliente fisico
   static Future<String> deleteClient(ObjectId uid) async {
     final collection = await _getClientCollection();
     var result = await collection!.deleteOne({'_id': uid});
@@ -104,15 +105,24 @@ class ClientControllerMongo {
   static Future<String> updateImageClient(File file, ObjectId fileId) async {
     Db? db = await MongoConnection().getConnection();
     await db!.open();
-
+    //Obtenemos el gridFS de la coleccion
     final gridfs = GridFS(db);
+    //Casteamos los datos a BsonBinary
+    BsonBinary bsondata = BsonBinary.from(file.readAsBytesSync());
+    //Actualizamos los datos binarios del chunk
+    final result = await gridfs.chunks
+        .updateOne(where.eq('files_id', fileId), modify.set('data', bsondata));
 
-    final result =  await gridfs.chunks.updateOne(where.eq('files_id', fileId), modify.set('data', await file.readAsBytes()));
-    //final result = await gridfs.findOne(where.eq('file_id', fileId));
-
+    //Cerramos la conexión
     await db.close();
 
-    return result.isSuccess.toString();
+    String message = "Actualización exitosa";
+
+    if (result.isFailure || result.hasWriteErrors) {
+      return message = "${result.errmsg}";
+    }
+
+    return message;
   }
 
   ///Obtenen imagen de cliente
@@ -123,10 +133,18 @@ class ClientControllerMongo {
     final gridfs = GridFS(db);
     var file = await gridfs.chunks.findOne(where.eq('files_id', imageId));
     //Obtenenmos los datos  BsonBinary
-    BsonBinary data = file!['data'];
-
+    dynamic data;
+    try {
+      if (file!['data'] is BsonBinary) {
+        data = file['data'];
+        //Enviamos los datos BsonBinary en tipo byteList
+        return Uint8List.fromList(data.byteList);
+      }
+    } catch (e) {
+      log('Error casteando imagen cliente: $e');
+    }
     await db.close();
-    //Enviamos los datos BsonBinary en tipo byteList
-    return Uint8List.fromList(data.byteList);
+
+    return Uint8List.fromList(List<int>.from(file!['data']));
   }
 }

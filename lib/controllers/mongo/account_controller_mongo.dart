@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:f_managment_stream_accounts/controllers/mongo/subscription_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/db/mongo/mongo_db.dart';
 import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:mongo_dart/mongo_dart.dart';
@@ -20,6 +21,7 @@ class AccountControllerMongo {
     return null;
   }
 
+  ///Agregar nueva cuenta
   static Future<String> addAccount(Account account) async {
     final collection = await _getCollection();
     var result = await collection!.insertOne(account.toMap());
@@ -30,6 +32,19 @@ class AccountControllerMongo {
     return "Error no se pudo agregar ${result.errmsg}";
   }
 
+  /// Actualizar estado de cuenta
+  static Future<String> updateStateAccount(ObjectId id, String state) async {
+    final collection = await _getCollection();
+    var result = await collection!.updateOne(
+        where.eq('_id', id), modify.set('state', state));
+
+    if (result.isSuccess) {
+      return 'Cuenta agregada a subscripcion';
+    }
+    return 'Error no se pudo actualizar estado de cuenta ${result.errmsg}';
+  }
+
+  /// Actualizar cuenta
   static Future<String> updateAccount(Account account) async {
     final collection = await _getCollection();
     var result = await collection!.updateOne(
@@ -49,6 +64,7 @@ class AccountControllerMongo {
     return "Error no se pudo actualizar ${result.errmsg}";
   }
 
+  /// Eliminar cuenta
   static Future<String> deleteAccount(ObjectId uid) async {
     final collection = await _getCollection();
     var result = await collection!.deleteOne({'_id': uid});
@@ -59,6 +75,8 @@ class AccountControllerMongo {
     return "Error no se pudo eliminar account ${result.errmsg}";
   }
 
+  /// Obtener una cuenta
+  /// @params uid
   static Future<Account> getAccount(ObjectId uid) async {
     final collection = await _getCollection();
     var result = await collection!.findOne({'_id': uid});
@@ -138,13 +156,19 @@ class AccountControllerMongo {
     return result!.map((account) => Account.fromMapObject(account)).toList();
   }
 
-  static Future<List<Account>> getAccountsConCapacidad() async {
+  /// Obtener cuentas con capacidad y no tienen subscripcion
+  static Future<List<Account>> getAccountsSinSubscriptionYDisponibles() async {
     final collectionAccount = await _getCollection();
+    final List<Account> acc =
+        await SubscriptionControllerMongo.getAccountWithSubscription();
+    // Obtenemos solo los ids en string
+    List<String> subscriptionAccountsId = acc.map((a) => a.uid!.oid).toList();
 
     final match = Match({
       'state': {
-        '\$nin': ['caida', 'ocupada']
-      }
+        '\$in': ['disponible']
+      },
+      '_id': {'\$nin': subscriptionAccountsId}
     });
 
     final lookupTypeAccount = Lookup(
@@ -173,5 +197,10 @@ class AccountControllerMongo {
     var result = await collectionAccount?.aggregateToStream(pipeline).toList();
 
     return result!.map((account) => Account.fromMapObject(account)).toList();
+
+    // Donde cuentas no contenga las id de cuentas con subscription
+    /* return accounts
+        .where((a) => !subscriptionAccountsId.contains(a.uid!.oid))
+        .toList(); */
   }
 }

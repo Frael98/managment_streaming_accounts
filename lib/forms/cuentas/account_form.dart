@@ -208,6 +208,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
               hintText: 'Seleccione Plataforma',
               labelText: 'Plataforma',
               controller: _platform,
+              validator: validatorCombo,
             ),
           ),
           Padding(
@@ -220,6 +221,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
               hintText: 'Seleccione tipo de cuenta',
               labelText: 'Tipo de Cuenta',
               controller: _typeAccount,
+              validator: validatorCombo,
             ),
           ),
           Padding(
@@ -228,16 +230,13 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
               children: [
                 Expanded(
                   child: CustomDropDownField<int>(
-                    items: capacidad,
-                    displayText: (c) => c.toString(),
-                    valueText: (c) => c.toString(),
-                    hintText: 'Capacidad',
-                    labelText: 'Capacidad',
-                    controller: _accountCapacityController,
-                  ), /* CustomTextFormField(
-                    labelText: 'Capacidad',
-                    controller: _accountCapacityController,
-                  ), */
+                      items: capacidad,
+                      displayText: (c) => c.toString(),
+                      valueText: (c) => c.toString(),
+                      hintText: 'Capacidad',
+                      labelText: 'Capacidad',
+                      controller: _accountCapacityController,
+                      validator: validatorCombo),
                 ),
                 const SizedBox(
                   width: 15,
@@ -277,6 +276,7 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     log('$horaInicio $fechaTermina $capacidad $tiempoComprado $precio');
 
     log(_platform.text);
+    log(_typeAccount.text);
     log(mongo.ObjectId.fromHexString(_typeAccount.text).toString());
     Account account = Account(
         email: email,
@@ -291,13 +291,16 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
             uid: mongo.ObjectId.fromHexString(_typeAccount.text)),
         perfilQuantity: int.parse(capacidad),
         price: double.parse(precio),
+        timeLimit: tiempoComprado,
         state: StateAccount.available.nombre);
 
     log(account.toString());
 
     try {
       var message = await AccountControllerMongo.addAccount(account);
-      if (!message.toLowerCase().contains('error')) {}
+      if (!message.toLowerCase().contains('error')) {
+        limpiarTextField();
+      }
       showToast(message);
     } catch (e) {
       log('Error al registrar cuenta: $e');
@@ -330,5 +333,17 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
     }
 
     return diferenciaEnMeses;
+  }
+
+  void limpiarTextField() {
+    log('Limpiando texts fields ...');
+    _emailController.clear();
+    _passwordController.clear();
+    _fechaInicioController.clear();
+    _horaInicioController.clear();
+    _fechaTerminaController.clear();
+    _tiempoCompradoController.clear();
+    _accountCapacityController.clear();
+    _priceController.clear();
   }
 }

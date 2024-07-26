@@ -1,7 +1,4 @@
 // ignore_for_file: overridden_fields
-
-import 'dart:developer';
-
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
 import 'package:f_managment_stream_accounts/models/account.dart';

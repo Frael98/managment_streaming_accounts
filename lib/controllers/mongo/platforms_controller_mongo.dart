@@ -13,10 +13,14 @@ class PlatformControllerMongo {
       return db.collection("platform");
     } catch (e) {
       log("Error obteniendo collection platform: $e");
+      /* Future.delayed(const Duration(seconds: 5), () {
+        _getCollection();
+      }); */
     }
     return null;
   }
 
+  ///Obtener listado de plataformas
   static Future<List<Platform>> getPlatforms() async {
     final platformCollection = await _getCollection();
     var result = await platformCollection!.find().toList();
@@ -25,6 +29,7 @@ class PlatformControllerMongo {
     return result.map((platform) => Platform.fromMap(platform)).toList();
   }
 
+  /// Agregar Plataforma
   static Future<String> addPlatform(Platform platform) async {
     final platformCollection = await _getCollection();
     var result = await platformCollection!.insertOne(platform.toMap());

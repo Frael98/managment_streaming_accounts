@@ -37,3 +37,13 @@
     - SnackBar: Un pequeño mensaje que se muestra temporalmente en la parte inferior de la pantalla, generalmente para informar al usuario sobre una acción o estado específico.
 
     El Scaffold proporciona una forma conveniente de organizar y estructurar la interfaz de usuario de tu aplicación de manera consistente con las directrices de Material Design. Además, simplifica la implementación de funcionalidades comunes, lo que permite un desarrollo más rápido y eficiente de aplicaciones Flutter.
+
+## SafeArea
+
+
+
+
+## ClipRRect vs CircleAvatar
+
+
+    

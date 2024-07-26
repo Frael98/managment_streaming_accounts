@@ -1,11 +1,3 @@
-// ignore_for_file: avoid_print
-
-import 'dart:math';
-
-//import 'package:f_managment_stream_accounts/models/client.dart';
-import 'package:f_managment_stream_accounts/models/subscription.dart';
-import 'package:mongo_dart/mongo_dart.dart';
-
 class Animal {
   final String nombre;
 

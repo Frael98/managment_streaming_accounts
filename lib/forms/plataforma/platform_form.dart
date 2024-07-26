@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
-import 'package:f_managment_stream_accounts/forms/plataforma/platform_list.dart';
+//import 'package:f_managment_stream_accounts/forms/plataforma/platform_list.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
@@ -20,16 +20,18 @@ class PlatformFormScreen extends StatefulWidget {
 
 class _PlatformFormScreenState extends State<PlatformFormScreen>
     with SingleTickerProviderStateMixin {
-  dynamic idPlatform = 0;
+  dynamic _idPlatform = 0;
   late AnimationController _controller;
 
+  // Fields
+  final GlobalKey<FormState> _key = GlobalKey();
   final TextEditingController _platformNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    obtenerPlatformAsync();
+    _obtenerPlatformAsync();
     _controller = AnimationController(vsync: this);
   }
 
@@ -39,13 +41,13 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
     super.dispose();
   }
 
-  Future<void> obtenerPlatformAsync() async {
+  Future<void> _obtenerPlatformAsync() async {
     if (widget.idPlatform != 0) {
       Platform? plataforma =
           await PlatformControllerMongo.getPlatform(widget.idPlatform);
       log(plataforma.toString());
       setState(() {
-        idPlatform = plataforma.id ?? plataforma.uid;
+        _idPlatform = plataforma.id ?? plataforma.uid;
       });
       _platformNameController.text = plataforma.namePlatform!;
       _descriptionController.text = plataforma.description!;
@@ -58,54 +60,70 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
       appBar: AppBar(
         title: const Text('Plataforma'),
       ),
-      body: Form(
-        child: Column(
-          children: [
-            //const SizedBox(height: 10,),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
-              child: CustomTextFormField(
-                  labelText: 'Platforma', controller: _platformNameController),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
-              child: CustomTextFormField(
-                  labelText: 'Descripcion', controller: _descriptionController),
-            ),
-            //const CustomDropDownField(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              child: CustomElevatedButton(
-                  color: Colors.red,
-                  title: "Eliminar",
-                  //isIcon: true,
-                  function: () async {
-                    await Future.delayed(const Duration(seconds: 2), () {
-                      // Código para ejecutar después de 2 segundos
-                      log('¡Esta línea se imprimirá después de 10 segundos!');
-                    });
-                  }),
-            ),
-          ],
-        ),
-      ),
+      body: _formPlatform(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          if (_key.currentState!.validate()) {
+            if (_idPlatform != 0) {
+              _updatePlatform(context);
+            } else {
+              _registerPlatform(context);
+            }
+          }
+        },
+        backgroundColor: Colors.green,
         child: const Icon(Icons.save),
       ),
     );
   }
 
+  /// Formulario
+  Widget _formPlatform() {
+    return Form(
+      key: _key,
+      child: Column(
+        children: [
+          //const SizedBox(height: 10,),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+            child: CustomTextFormField(
+              labelText: 'Platforma',
+              controller: _platformNameController,
+              validator: messageValidator,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+            child: CustomTextFormField(
+                labelText: 'Descripcion', controller: _descriptionController),
+          ),
+          //const CustomDropDownField(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            child: CustomElevatedButton(
+                color: Colors.red,
+                title: "Eliminar",
+                //isIcon: true,
+                function: () async {
+                  await Future.delayed(const Duration(seconds: 2), () {
+                    // Código para ejecutar después de 2 segundos
+                    log('¡Esta línea se imprimirá después de 10 segundos!');
+                  });
+                }),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Limpiar campos
-  void limpiarTexts() {
+  void _limpiarTexts() {
     _platformNameController.text = '';
     _descriptionController.text = '';
   }
 
   /// Registrar plataforma
-  void registerPlatform(BuildContext context) async {
+  void _registerPlatform(BuildContext context) async {
     String platformName = _platformNameController.text.trim();
     String description = _descriptionController.text.trim();
 
@@ -118,8 +136,8 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
     try {
       var message = await PlatformControllerMongo.addPlatform(newPlatform);
       if (!message.toLowerCase().contains("error")) {
-        limpiarTexts();
-        goToPlatformList();
+        _limpiarTexts();
+        _goToPlatformList();
       }
       showToast(message);
     } catch (e) {
@@ -128,14 +146,14 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
   }
 
   /// Actualizar plataforma
-  void updatePlatform(BuildContext context) async {
+  void _updatePlatform(BuildContext context) async {
     String name = _platformNameController.text.trim();
     String description = _descriptionController.text.trim();
 
     /// Aqui se crea un nuevo objeto con el id, el toMap() solo hara que los campos necesarios se actualizen
     Platform updated = Platform(
-      uid: idPlatform is mongo.ObjectId ? idPlatform : null,
-      id: idPlatform is int ? idPlatform : 0,
+      uid: _idPlatform is mongo.ObjectId ? _idPlatform : null,
+      id: _idPlatform is int ? _idPlatform : 0,
       namePlatform: name,
       description: description,
       updatedAt: DateTime.now(),
@@ -145,22 +163,22 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
       var message = await PlatformControllerMongo.updatePlatform(updated);
 
       if (!message.toLowerCase().contains("error")) {
-        limpiarTexts();
+        _limpiarTexts();
       }
       showToast(message);
-      goToPlatformList();
+      _goToPlatformList();
     } catch (e) {
       log('Error al actualizar plataforma: $e');
     }
   }
 
   /// Eliminar plataforma
-  void deletePlatform(BuildContext context) async {
+  void _deletePlatform(BuildContext context) async {
     try {
       var message =
-          await PlatformControllerMongo.updatePlatform(widget.idPlatform);
+          await PlatformControllerMongo.deletePlatform(widget.idPlatform);
       if (!message.toLowerCase().contains("error")) {
-        goToPlatformList();
+        _goToPlatformList();
       }
       showToast(message);
     } catch (e) {
@@ -169,12 +187,13 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
   }
 
   /// Navegar a lista de plataformas
-  void goToPlatformList() {
-    Navigator.pushReplacement(
+  void _goToPlatformList() {
+    Navigator /* pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => const PlatformListView(),
       ),
-    );
+    ) */
+        .pop(context);
   }
-}// End class
+} // End class

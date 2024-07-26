@@ -3,6 +3,7 @@ import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 class Client extends Entity {
+  ObjectId? imagen;
   String? nameClient;
   String? numberPhone;
   String? direction;
@@ -15,6 +16,7 @@ class Client extends Entity {
       this.numberPhone,
       this.direction,
       this.email,
+      this.imagen,
       state,
       createdAt,
       updatedAt,
@@ -57,6 +59,7 @@ class Client extends Entity {
       id: map['ID_CLIENT'] ?? map['id_client'],
       nameClient: map['NAME_CLIENT'] ?? map['name_client'],
       numberPhone: map['NUMBER_PHONE'] ?? map['number_phone'],
+      imagen: map['imagen_id'] ?? map['IMAGEN_ID'],
       state: map['STATE'] ?? map['state'],
       direction: map['DIRECTION'] ?? map['direction'],
       email: map['EMAIL'] ?? map['email'],

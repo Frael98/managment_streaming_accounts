@@ -1,201 +1,174 @@
 import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/account_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/controllers/mongo/subscription_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
-import 'package:f_managment_stream_accounts/forms/components/custom_date_picker.dart';
-import 'package:f_managment_stream_accounts/forms/components/custom_dropdown_field.dart';
-import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_account_card.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
 import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
 import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
-import 'package:f_managment_stream_accounts/utils/constantes.dart';
+import 'package:f_managment_stream_accounts/models/subscription.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+//import 'package:flutter_slidable/flutter_slidable.dart';
 
+// ignore: must_be_immutable
 class SubscriptionFormScreen extends StatefulWidget {
-  const SubscriptionFormScreen({super.key});
+  mongo.ObjectId? idSubscription;
+
+  SubscriptionFormScreen({super.key, this.idSubscription});
 
   @override
   State<SubscriptionFormScreen> createState() => _SubscriptionFormScreenState();
 }
 
 class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
-  //List<Account> cuentas = [];
+  Subscription? _subscription;
+
+  String? _codSubscription;
   Account? _account;
   List<Client> _clients = [];
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
-  //final TextEditingController _accountController = TextEditingController();
-  int accountCapacity = 0;
+  final Map<mongo.ObjectId, TextEditingController> _pagaController = {};
+
+  int _accountCapacity = 0;
+  List<bool> _expandedClients = [];
+
+  @override
+  void initState() {
+    getSubscription();
+    getLastSubscription();
+    super.initState();
+  }
+
+  //Obtener y setear datos de subscripción
+  void getSubscription() {
+    if (isNotNull(widget.idSubscription)) {
+      SubscriptionControllerMongo.getSubscription(widget.idSubscription!)
+          .then((s) {
+        setState(() {
+          _subscription = s;
+          _account = s.account;
+          _clients = s.clients!;
+          _accountCapacity = _account!.perfilQuantity!;
+        });
+      });
+    }
+  }
+
+  /// Obtener última subscripción código
+  void getLastSubscription() {
+    SubscriptionControllerMongo.requestLastSubscription().then(
+      (value) {
+        setState(() {
+          _codSubscription = value;
+        });
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Subscripción'),
-        ),
-        body: formSubscription(context)
-        /* cuentas.isNotEmpty
-          ? formSubscription(context)
-          : const Center(
-              child: CircularProgressIndicator(),
-            ), */
-        );
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        title: const Text('Subscripción'),
+      ),
+      body: SingleChildScrollView(
+        child: isNotNull(_codSubscription)
+            ? _formSubscription(context)
+            : const Center(
+                child: CircularProgressIndicator(),
+              ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialogMessage(context,
+              title: 'Esta seguro de guardar esta subscripcion',
+              callbackYes: _saveSubscription);
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.save),
+      ),
+    );
   }
 
-  @override
-  void initState() {
-    //getComboAccounts();
-    super.initState();
-  }
-
-  Widget formSubscription(BuildContext context) {
+  ///Formulario Subscripcion
+  Widget _formSubscription(BuildContext context) {
     return Form(
       key: _key,
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            child: OutlinedButton(
-              onPressed: _addAccount,
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [Icon(Icons.add), Text('Agregar cuenta')],
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: Text(
+                  isNotNull(_subscription)
+                      ? 'SUBS-${_subscription!.codSubscription}'
+                      : 'SUBS-$_codSubscription',
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl,
+                  style: const TextStyle(fontSize: 20),
+                ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            child: ExpansionTile(
-              title: isNull(_account)
-                  ? Text(_account!.email)
-                  : const Text('Agregue una cuenta!.'),
-              children: [
-                isNull(_account)
-                    ? Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  "Fecha Compra: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                    '${Format.toDateMonthLetter(_account!.registerDate)} Hora ${_account!.registerDate.toLocal().hour}:${_account!.registerDate.toLocal().minute}')
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  "Fecha Corte: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(Format.toDateMonthLetter(
-                                    _account!.expireDate))
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  "Tiempo comprado: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(_account!.timeLimit!)
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  "Tipo Cuenta: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(_account!.typeAccount.nameTypeAccount!)
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  "Plataforma: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(_account!.platform.namePlatform!)
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  "Capacidad: ",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(_account!.perfilQuantity.toString())
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  'Costo: ',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text('\$ ${_account!.price!}')
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  'Estado: ',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  '${_account!.state}',
-                                  style: TextStyle(
-                                      color: colorStates[_account!.state]),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      )
-                    : const Text('No data'),
-              ],
-            ),
-          ),
+          isNotNull(_subscription)
+              ? const SizedBox(
+                  height: 2,
+                )
+              : Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  child: OutlinedButton(
+                    onPressed: _addAccount,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [Icon(Icons.add), Text('Agregar cuenta')],
+                    ),
+                  ),
+                ),
+          isNotNull(_account)
+              ? Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  child: ImprovedCard(
+                    account: _account,
+                    disableColorDelete: true,
+                    deleteAccount: () {
+                      if (_subscription == null) {
+                        setState(() {
+                          _account = null;
+                          _clients.clear();
+                        });
+                      }
+                    },
+                  ))
+              : /* Container(
+                  margin: const EdgeInsets.all(15),
+                  child: const Text('Agregue una cuenta', style: TextStyle(fontSize: 20),),
+                ) */
+              const Card(
+                  elevation: 4,
+                  child: Padding(
+                    padding: EdgeInsets.all(15),
+                    child: Text(
+                      "Agregue una cuenta",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
             child: OutlinedButton(
               style: ButtonStyle(
                 foregroundColor: WidgetStateProperty.resolveWith<Color?>(
                     (Set<WidgetState> states) {
-                  // Here, you can define different colors for different states if needed.
-                  return const Color(
-                      0xFF21BFBD); // Replace with your desired icon color
+                  return const Color(0xFF21BFBD);
                 }),
               ),
               onPressed: _addClient,
@@ -205,24 +178,101 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
               ),
             ),
           ),
-          Wrap(
-            children: _clients
-                .map((client) => GestureDetector(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Wrap(
+              spacing: 15.0,
+              runSpacing: 6.0,
+              children: _clients
+                  .map(
+                    (client) => GestureDetector(
                       onTap: () {
-                        // Show client details
+                        _showClientDetails(client);
                       },
-                      child: CircleAvatar(
-                        child: Text(client
-                            .nameClient!), // Placeholder for client photo or initials
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            child: Text(
+                              client.nameClient!.substring(0, 1),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          Text(client.nameClient!.split(' ')[0])
+                        ],
                       ),
-                    ))
-                .toList(),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         ],
       ),
     );
   }
 
+  //TODO: IMPLEMENTAR GUARDADO DE PAGOS DE CLIENTES
+  /// Mostrar detalles del cliente en cuenta
+  void _showClientDetails(Client client) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        ' ${client.nameClient}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _clients.remove(client);
+                            });
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ))
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  CustomTextFormField(
+                    labelText: '\$${_account!.price}',
+                    controller: //_pagaController.containsKey(client.uid)
+                        _pagaController[client.uid]
+                    //: TextEditingController()
+                    ,
+                    //validator: ,
+                    keyboardType: TextInputType.number,
+                  ),
+                  // Add more client details here
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Agrega una cuenta en vista
   void _addAccount() async {
     final result = await Navigator.push(
       context,
@@ -235,29 +285,80 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     if (result != null) {
       setState(() {
         _account = result;
-        accountCapacity = _account!.perfilQuantity;
+        _accountCapacity = _account!.perfilQuantity!;
+        _expandedClients = [];
       });
     }
   }
 
+  /// Agrega clientes segun la capacidad de la cuenta en vista
   void _addClient() async {
-    if (_clients.length < accountCapacity) {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ClientListView(
-            returnClient: true,
-          ),
+    if (_clients.length >= _accountCapacity) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Capacidad de la cuenta alcanzada'),
+      ));
+      return;
+    }
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ClientListView(
+          returnClient: true,
         ),
-      );
-      if (result != null && !_clients.contains(result)) {
-        setState(() {
-          _clients.add(result);
-        });
+      ),
+    );
+
+    // si resultado no es nula y el cliente no existe en la lista lo agrega
+    if (result != null && !_clients.any((c) => c.uid == result.uid)) {
+      log('result client ${result.uid}');
+
+      setState(() {
+        _clients.add(result);
+        _expandedClients.add(false);
+        TextEditingController controller = TextEditingController();
+        _pagaController[result.uid] = controller;
+      });
+    } else {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Este cliente ya esta en la lista'),
+      ));
+    }
+  }
+
+  /// Guardar subscripcion en base
+  void _saveSubscription() async {
+    if (_account != null && _clients.isNotEmpty) {
+      Subscription subscription = Subscription(
+          codSubscription: 'SUBS-$_codSubscription',
+          account: Account.uid(uid: _account!.uid!),
+          clients: _clients,
+          dateStarted: DateTime.now(),
+          dateFinish: DateTime.now().add(const Duration(days: 20)),
+          valueToPay: 2.5);
+
+      try {
+        var message =
+            await SubscriptionControllerMongo.addSubscription(subscription);
+
+        if (!message.contains('error')) {
+          String state = "parcialmente disponible";
+          if (_clients.length == _accountCapacity) state = "ocupado";
+
+          var message2 = await AccountControllerMongo.updateStateAccount(
+              _account!.uid!, state);
+
+          log(message2);
+        }
+
+        showToast(message);
+      } catch (e) {
+        log("Save subscription error: $e");
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Capacity reached'),
+        content: Text('Seleccione una cuenta y al menos un cliente'),
       ));
     }
   }

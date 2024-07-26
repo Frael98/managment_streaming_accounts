@@ -49,6 +49,7 @@ class _SubscriptionListViewState extends State<SubscriptionListView> {
             ),
           );
         },
+        backgroundColor: Colors.green,
         child: const Icon(Icons.add),
       ),
       body: _subscriptions != null
@@ -63,6 +64,7 @@ class _SubscriptionListViewState extends State<SubscriptionListView> {
   Widget buildSubscriptionsList(
       BuildContext context, List<Subscription>? subscriptions) {
     return ListView.builder(
+        padding: const EdgeInsets.only(bottom: 80),
         itemCount: subscriptions!.length,
         itemBuilder: (_, index) {
           final subscription = subscriptions[index];

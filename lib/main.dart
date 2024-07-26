@@ -20,7 +20,8 @@ class MyApp extends StatelessWidget {
       title: 'Sistema Gestor de Cuentas Streaming',
       theme: ThemeData.dark(),
       //home: const LogIn(title: ''),
-      home: const HomeScreen(usuario: 'Test', correo: 'test@email.com'),
+      home: const Home(usuario: 'Test', correo: 'test@email.com'),
+      //routes: ,
     );
   }
 }

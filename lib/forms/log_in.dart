@@ -6,7 +6,7 @@ import 'package:f_managment_stream_accounts/forms/components/custom_elevated_but
 import 'package:f_managment_stream_accounts/forms/home.dart';
 import 'package:f_managment_stream_accounts/forms/sign_up.dart';
 import 'package:f_managment_stream_accounts/models/user.dart';
-import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
+//import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 
@@ -94,7 +94,7 @@ class LogInState extends State<LogIn> {
         // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(
+          builder: (context) => Home(
             usuario: name,
             correo: email,
           ),

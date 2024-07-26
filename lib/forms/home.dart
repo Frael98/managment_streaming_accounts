@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
@@ -17,6 +18,8 @@ import 'package:f_managment_stream_accounts/utils/constantes.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+
 //import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:toast/toast.dart';
 
@@ -31,7 +34,7 @@ class Home extends StatefulWidget {
 }
 
 class HomeScreen extends State<Home> {
-  Future<List<Client>>? _clientsStream;
+  Future<List<Client>>? _clients;
   Future<List<Platform>>? _platformsStream;
   final Connectivity _connectivity = Connectivity();
 
@@ -39,16 +42,16 @@ class HomeScreen extends State<Home> {
   void initState() {
     super.initState();
     log('Iniciando datos');
-    initData();
-    checkConnection(context);
+    _initData();
+    _checkConnection(context);
   }
 
-  void initData() {
-    initClientsData();
-    initPlatformsData();
+  void _initData() {
+    _initClientsData();
+    _initPlatformsData();
   }
 
-  void initClientsData()async {
+  void _initClientsData() async {
     /* log('Iniciando datos clientes');
      try {
         var tmp = await ClientControllerMongo.getClients();
@@ -66,15 +69,15 @@ class HomeScreen extends State<Home> {
     } */
     ClientControllerMongo.getClients().then((data) {
       setState(() {
-        _clientsStream = Future.value(data);
+        _clients = Future.value(data);
       });
     }).catchError((error) {
       log('Error cargando datos clientes: $error');
-      Future.delayed(const Duration(seconds: 5), initClientsData);
+      Future.delayed(const Duration(seconds: 5), _initClientsData);
     });
   }
 
-  void initPlatformsData() {
+  void _initPlatformsData() {
     /*  log('Iniciando datos plataformas');
     try {
       setState(() {
@@ -95,11 +98,12 @@ class HomeScreen extends State<Home> {
       });
     }).catchError((error) {
       log('Error cargando datos plataformas: $error');
-      Future.delayed(const Duration(seconds: 5), initPlatformsData);
+      Future.delayed(const Duration(seconds: 5), _initPlatformsData);
     });
   }
 
-  checkConnection(BuildContext context) {
+  ///Chequeo de conexion a internet
+  _checkConnection(BuildContext context) {
     _connectivity.onConnectivityChanged.listen(
       (List<ConnectivityResult> result) {
         log(result.first.toString());
@@ -132,7 +136,8 @@ class HomeScreen extends State<Home> {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Inicio'),
+          title: const Text('Home'),
+          centerTitle: true,
         ),
         drawer: Drawer(
           child: ListView(
@@ -148,15 +153,15 @@ class HomeScreen extends State<Home> {
                   color: Color.fromARGB(255, 17, 27, 54),
                 ),
               ),
-              ...menus(context)
+              ..._menus(context)
             ],
           ),
         ),
-        body: areaHome(context));
+        body: _areaHome(context));
   }
 
   ///Area Home
-  Widget areaHome(BuildContext context) {
+  Widget _areaHome(BuildContext context) {
     return SingleChildScrollView(
       child: SafeArea(
         child: Padding(
@@ -165,7 +170,7 @@ class HomeScreen extends State<Home> {
             mainAxisAlignment: MainAxisAlignment.start, //
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              recents(context),
+              _recents(context),
               const SizedBox(
                 height: 15,
               ),
@@ -179,7 +184,7 @@ class HomeScreen extends State<Home> {
   }
 
   /// Sección Recientes
-  Widget recents(BuildContext context) {
+  Widget _recents(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -301,7 +306,7 @@ class HomeScreen extends State<Home> {
     //log(_clientsStream!.first.toString()); esta escuchando, y no puede ser escuchado por varios
     return FutureBuilder(
         //stream: ClientControllerMongo.getClients().asStream(),
-        future: _clientsStream,
+        future: _clients,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Padding(
@@ -369,12 +374,18 @@ class HomeScreen extends State<Home> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    CircleAvatar(
-                                      radius: 30,
-                                      child: Text(
-                                        client.nameClient!.substring(0, 1),
-                                      ),
-                                    ),
+                                    isNotNull(client.imagen)
+                                        ? FutureBuilder(
+                                            future:
+                                                _getImageClient(client.imagen),
+                                            builder: _builderImage)
+                                        : CircleAvatar(
+                                            radius: 30,
+                                            child: Text(
+                                              client.nameClient!
+                                                  .substring(0, 1),
+                                            ),
+                                          ),
                                     const SizedBox(height: 5),
                                     Text(
                                       client.nameClient!,
@@ -457,9 +468,9 @@ class HomeScreen extends State<Home> {
   }
 
   ///Menus del home
-  List<Widget> menus(BuildContext context) {
+  List<Widget> _menus(BuildContext context) {
     return [
-      CustomExpansionTile(title: 'Acciones', tiles: submenus(context)),
+      CustomExpansionTile(title: 'Acciones', tiles: _submenus(context)),
       ListTile(
         leading: const Icon(Icons.logout),
         title: const Text('Cerrar sesión'),
@@ -478,7 +489,7 @@ class HomeScreen extends State<Home> {
   }
 
   /// Submenus
-  List<Widget> submenus(BuildContext context) {
+  List<Widget> _submenus(BuildContext context) {
     return [
       ListTile(
         leading: const Icon(Icons.contact_mail),
@@ -529,5 +540,27 @@ class HomeScreen extends State<Home> {
         },
       ),
     ];
+  }
+
+  /// Obtener imagen de cliente
+  Future<Uint8List> _getImageClient(mongo.ObjectId? idImage) async {
+    Uint8List? imgList = await ClientControllerMongo.getClientImage(idImage!);
+    return imgList!;
+  }
+
+  /// Construir imagen de cliente
+  Widget _builderImage(BuildContext context, AsyncSnapshot snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CircularProgressIndicator();
+    } else {
+      Uint8List imageData = snapshot.data as Uint8List;
+      // Convert Uint8List to MemoryImage
+      ImageProvider<Object> imageProvider = MemoryImage(imageData);
+
+      return CircleAvatar(
+        radius: 30,
+        backgroundImage: imageProvider,
+      );
+    }
   }
 }

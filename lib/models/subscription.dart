@@ -1,18 +1,16 @@
-import 'dart:developer';
-
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
-import 'package:mongo_dart/mongo_dart.dart';
+//import 'package:mongo_dart/mongo_dart.dart';
 
 /// Subscripcion
 class Subscription extends Entity {
-  final String? _codSubscription;
-  final Account? _account;
-  final List<Client>? _clients;
-  final DateTime _dateStarted;
-  final DateTime _dateFinish;
-  final double _valueToPay;
+  String? _codSubscription;
+  Account? _account;
+  List<Client>? _clients;
+  DateTime? _dateStarted;
+  DateTime? _dateFinish;
+  double? _valueToPay;
 
   Subscription({
     String? codSubscription,
@@ -20,9 +18,9 @@ class Subscription extends Entity {
     id,
     Account? account,
     List<Client>? clients,
-    required DateTime dateStarted,
-    required DateTime dateFinish,
-    required double valueToPay,
+    DateTime? dateStarted,
+    DateTime? dateFinish,
+    double? valueToPay,
     state,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -43,16 +41,12 @@ class Subscription extends Entity {
 
   factory Subscription.fromMapObject(Map<String, dynamic> map) {
     // Parseando la lista de clientes desde el mapa
-    //log(map['clients'][0].toString());
+    //log(map.toString());
     try {
-      dynamic clientsData = (map['clients'] ?? map['CLIENTS'] ?? []);
+      dynamic clientsData = (map['clients'] ?? map['CLIENTS']);
       //log(clientsData.toString());
       List<Client> clientes = clientsData
-          .map((clientMap) {
-            /* if (clientMap is Map<String, dynamic>) { */
-            return Client.fromMap(clientMap);
-            /* } */
-          })
+          .map((clientMap) => Client.fromMap(clientMap))
           .toList()
           .cast<Client>();
 
@@ -61,15 +55,14 @@ class Subscription extends Entity {
           codSubscription: map['cod_subscription'],
           uid: map['_id'],
           id: map['id_subscription'] ?? map['ID_SUBSCRIPTION'] ?? 0,
-          account: Account.fromMap(map['account'][0] ?? map['ACCOUNT'][0]),
+          account: Account.fromMapObject(map['account'] ?? map['ACCOUNT']),
           clients: clientes,
           dateStarted: map['date_started'] ?? map['DATE_STARTED'],
           dateFinish: map['date_finish'] ?? map['DATE_FINISH'],
           valueToPay: map['value_to_pay'] ?? map['VALUE_TO_PAY']);
     } catch (e) {
-      log('Error en fromMap subscription $e');
-      throw const FormatException(
-          'Error al convertir el mapa a objeto Subscription');
+      throw FormatException(
+          'Error al convertir el mapa a objeto Subscription $e');
     }
   }
 
@@ -77,8 +70,8 @@ class Subscription extends Entity {
   Map<String, dynamic> toMap() {
     return {
       'cod_subscription': codSubscription,
-      'account': account,
-      'clients': clients,
+      'account': account!.uid,
+      'clients': clients!.map((c) => c.uid).toList(),
       'date_started': dateStarted,
       'date_finish': dateFinish,
       'value_to_pay': valueToPay,
@@ -93,9 +86,9 @@ class Subscription extends Entity {
   //String? get idSubscription => _idSubscription;
   Account? get account => _account!;
   List<Client>? get clients => _clients!;
-  DateTime get dateStarted => _dateStarted;
-  DateTime get dateFinish => _dateFinish;
-  double get valueToPay => _valueToPay;
+  DateTime get dateStarted => _dateStarted!;
+  DateTime get dateFinish => _dateFinish!;
+  double get valueToPay => _valueToPay!;
   String? get codSubscription => _codSubscription;
 
   @override

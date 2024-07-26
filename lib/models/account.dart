@@ -1,6 +1,8 @@
 /* 
   La cuenta que se crea en la plataforma   
  */
+//import 'dart:developer';
+
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:f_managment_stream_accounts/models/type_account.dart';
@@ -81,7 +83,9 @@ class Account extends Entity {
 
   ///Mapeo de los atributos cuando estos tienen objetos (Platform, TypeAccount)
   factory Account.fromMapObject(Map<String, dynamic> map) {
-    return Account(
+    //log('Plataformaa : ${map['platform']}');
+   try {
+      return Account(
         uid: map['_id'],
         id: map['ID_ACCOUNT'] ?? map['id_account'] ?? 0,
         email: map['EMAIL'] ?? map['email'],
@@ -95,6 +99,10 @@ class Account extends Entity {
         price: map['PRICE'] ?? map['price'] ?? 0.0,
         timeLimit: map['TIME_LIMIT'] ?? map['time_limit'] ?? '',
         state: map['STATE'] ?? map['state']);
+   } catch (e) {
+     throw FormatException(
+          'Error al convertir el mapa a objeto Account $e');
+   }
   }
 
   factory Account.fromMapForSQLite(Map<String, dynamic> map) {

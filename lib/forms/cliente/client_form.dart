@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 //import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
@@ -72,6 +71,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         title: const Text('Cliente'),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.green,
         child: const Icon(Icons.save),
         onPressed: () {
           if (_key.currentState!.validate()) {
