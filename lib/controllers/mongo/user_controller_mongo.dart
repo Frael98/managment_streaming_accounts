@@ -21,13 +21,15 @@ class UserControllerMongo {
     return null;
   }
 
-  Future<int> addClient(User user) async {
+  /// Agregar usuario
+  static Future<int> addUser(User user) async {
     final userCollection = await getUserCollection();
     var result = await userCollection!.insertOne(user.toMap());
 
     return result.nInserted;
   }
 
+  /// Iniciar sesion
   static Future<User?> logIn(User user) async {
     final userCollection = await getUserCollection();
     var userLoged = await userCollection

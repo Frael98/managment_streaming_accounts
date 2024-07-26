@@ -1,16 +1,22 @@
-# f_managment_stream_accounts
+# Managment Stream Accounts
 
-A new Flutter project.
+## LogIn
 
-## Getting Started
+![alt text](images/login.png)
 
-This project is a starting point for a Flutter application.
+## Home
 
-A few resources to get you started if this is your first Flutter project:
+![alt text](images/home_menu.png)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Clientes
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![alt text](images/menu_clientes.png)
+
+### Cuentas
+
+![alt text](images/menu_cuentas.png)
+
+### Plataformas
+
+![alt text](images/menu_plataformas.png)
+

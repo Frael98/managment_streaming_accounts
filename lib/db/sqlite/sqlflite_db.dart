@@ -47,4 +47,14 @@ void initOrCreateTables() async {
   } catch (e) {
     log('Hubo un error al crear la tabla: $e');
   }
+
+
+  try {
+    db.execute('CREATE TABLE TYPE_ACCOUNT('
+        ' ID_TYPE_ACCOUNT INTEGER PRIMARY KEY, NAME_TYPE_ACCOUNT TEXT);');
+
+    log('La tabla TYPE_ACCOUNT se ha creado correctamente.');
+  } catch (e) {
+    log('Hubo un error al crear la tabla: $e');
+  }
 }

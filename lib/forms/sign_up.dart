@@ -1,10 +1,11 @@
 import 'dart:developer';
 
-import 'package:f_managment_stream_accounts/controllers/user_controller.dart';
-import 'package:f_managment_stream_accounts/forms/login.dart';
+//import 'package:f_managment_stream_accounts/controllers/mongo/user_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/controllers/sqlite/user_controller_sqlite.dart';
+import 'package:f_managment_stream_accounts/forms/log_in.dart';
 import 'package:f_managment_stream_accounts/models/user.dart';
+import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:toast/toast.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -110,13 +111,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
 
-      await UserController.addUser(newUser);
+      await UserControllerSQLite.addUser(newUser);
+      //await UserControllerMongo.addUser(newUser);
+
       limpiarTexts();
       showToast('Ud ha sido registrado correctamente!');
 
       // Redirige a la pantalla de perfil del usuario después del registro
-       // ignore: use_build_context_synchronously
        Navigator.push(
+       // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
             builder: (context) => const LogIn(
@@ -127,10 +130,5 @@ class _SignUpScreenState extends State<SignUpScreen> {
       log('Error al registrar al usuario: $e');
       showToast('Error al registrar al usuario: $e');
     }
-  }
-
-  //Muestra mensajes
-  void showToast(String message) {
-    Toast.show(message, duration: Toast.lengthLong, gravity: Toast.bottom);
   }
 }

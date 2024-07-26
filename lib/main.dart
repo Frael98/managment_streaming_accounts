@@ -1,10 +1,11 @@
-import 'package:f_managment_stream_accounts/db/database.dart';
-import 'package:f_managment_stream_accounts/forms/login.dart';
+//import 'package:f_managment_stream_accounts/db/sqlite/sqlflite_db.dart';
+import 'package:f_managment_stream_accounts/forms/home.dart';
+import 'package:f_managment_stream_accounts/forms/log_in.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  initDataBase();
+  //initOrCreateTables();
   runApp(const MyApp());
 }
 
@@ -15,9 +16,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Sistema Gestor de Cuentas Streaming',
       theme: ThemeData.dark(),
-      home: const LogIn(title: 'Flutter Page'),
+      //home: const LogIn(title: ''),
+      home: const Home(usuario: 'Test', correo: 'test@email.com'),
+      //routes: ,
     );
   }
 }

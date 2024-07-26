@@ -1,8 +1,8 @@
 /* Usuario del sistema */
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 
 class User extends Entity {
-  int? idUser;
   String? name;
   String? lastname;
   String? user;
@@ -11,29 +11,32 @@ class User extends Entity {
   String? password;
 
   User({
-    this.idUser,
+    ObjectId? uid,
+    int? id,
     required this.name,
     required this.lastname,
     required this.user,
     required this.email,
     this.age,
     required this.password,
-    String? state,
+    state,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
   }) : super(
+            uid: uid,
+            id: id,
             state: state,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt);
 
   User.validation(this.user, this.password);
-  User.audit({this.idUser, state, createdAt, updatedAt, deletedAt});
+  User.audit({id, state, createdAt, updatedAt, deletedAt});
 
   // Método para convertir la instancia de la clase a un mapa
+  @override
   Map<String, dynamic> toMap() {
-    // alias: toJson
     return {
       'user': user,
       'name': name,
@@ -42,7 +45,7 @@ class User extends Entity {
       'email': email,
       'password': password,
       'state': state,
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': createdAt,
       'updated_at': updatedAt,
       'deleted_at': deletedAt,
     };
@@ -50,7 +53,8 @@ class User extends Entity {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-        idUser: map['IDUSER'] ?? map['id_user'],
+        uid: map['_id'],
+        id: map['IDUSER'] ?? map['id_user'],
         name: map['NAME'] ?? map['name'],
         lastname: map['LASTNAME'] ?? map['lastname'],
         user: map['USER'] ?? map['user'],
@@ -61,17 +65,41 @@ class User extends Entity {
 
   factory User.fromMapAudit(Map<String, dynamic> map) {
     return User.audit(
-        idUser: map['IDUSER'],
+        id: map['IDUSER'],
         state: map['STATE'],
         createdAt: map['CREATED_AT'],
         updatedAt: map['UPDATED_AT'],
         deletedAt: map['DELETED_AT']);
   }
 
-  // Implement toString to make it easier to see information about
+   factory User.fromMapAuditForSQLite(Map<String, dynamic> map) {
+    return User.audit(
+        id: map['IDUSER'],
+        state: map['STATE'],
+        createdAt: DateTime.parse(map['CREATED_AT']),
+        updatedAt: DateTime.parse(map['UPDATED_AT']),
+        deletedAt: DateTime.parse(map['DELETED_AT']));
+  }
+
   // each User when using the print statement.
   @override
   String toString() {
-    return 'User {id: $idUser name: $name, user: $user, lastname: $lastname, email: $email, password: $password, created_at: $createdAt}';
+    return 'User {id: $id name: $name, user: $user, lastname: $lastname, email: $email, password: $password, created_at: $createdAt}';
+  }
+
+  @override
+  Map<String, dynamic> toMapForSQLite() {
+    return {
+      'user': user,
+      'name': name,
+      'lastname': lastname,
+      'age': age,
+      'email': email,
+      'password': password,
+      'state': state,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+    };
   }
 }

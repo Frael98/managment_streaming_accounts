@@ -1,9 +1,12 @@
 import 'dart:developer';
 
-import 'package:f_managment_stream_accounts/controllers/user_controller.dart';
+import 'package:f_managment_stream_accounts/controllers/mongo/user_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
+//import 'package:f_managment_stream_accounts/controllers/sqlite/user_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/forms/home.dart';
 import 'package:f_managment_stream_accounts/forms/sign_up.dart';
 import 'package:f_managment_stream_accounts/models/user.dart';
+//import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 
@@ -33,7 +36,6 @@ class LogInState extends State<LogIn> {
   @override
   Widget build(BuildContext context) {
     ToastContext().init(context);
-
     return Scaffold(body: formLogIn());
   }
 
@@ -62,7 +64,6 @@ class LogInState extends State<LogIn> {
 
   /// Logeo
   void logIn() async {
-
     if (!isValid()) {
       showToast('action', '', 'Por favor llene los campos');
       return;
@@ -71,13 +72,14 @@ class LogInState extends State<LogIn> {
     String user = userController.text;
     String pass = passwordController.text;
 
-    var datos = await UserController.logIn(User.validation(user, pass));
+    //var datos = await UserControllerSQLite.logIn(User.validation(user, pass));
+    var datos = await UserControllerMongo.logIn(User.validation(user, pass));
     var name = '', email = '';
 
     if (datos != null) {
-      log(datos.first.toString());
-      name = datos.first.name!;
-      email = datos.first.email!;
+      log(datos.toString());
+      name = datos.name!;
+      email = datos.email!;
     } else {
       showToast('action', '', 'Usuario no existe');
       return;
@@ -89,9 +91,10 @@ class LogInState extends State<LogIn> {
         ' Acceso concedido');
     // ignore: use_build_context_synchronously
     Navigator.push(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(
+          builder: (context) => Home(
             usuario: name,
             correo: email,
           ),
@@ -132,15 +135,29 @@ class LogInState extends State<LogIn> {
           const SizedBox(
             height: 20,
           ),
-          ElevatedButton(onPressed: logIn, child: const Text('Iniciar sesión')),
-          ElevatedButton(
-              onPressed: () {
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+            child: CustomElevatedButton(
+              function: () async {
+                logIn();
+              },
+              color: Colors.blue,
+              title: 'Iniciar Sesión',
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+            child: CustomElevatedButton(
+              color: Colors.blueGrey,
+              function: () async {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const SignUpScreen()));
               },
-              child: const Text('Registrarse')),
+              title: 'Registrarse',
+            ),
+          ),
         ],
       ),
     );

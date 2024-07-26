@@ -3,7 +3,7 @@ import 'package:flutter_dialogs/flutter_dialogs.dart';
 import 'package:toast/toast.dart';
 
 /// Verifica si un objeto es nulo
-bool isNull(Object? object){
+bool isNotNull(Object? object) {
   return object != null;
 }
 
@@ -16,10 +16,13 @@ String? messageValidator(String? formText) {
 
 ///Validacion de formato email
 String? validateEmail(String? formEmail) {
-  if (formEmail!.isEmpty) return "Email obligatorio";
+  if (formEmail == null || formEmail.isEmpty) return "Email obligatorio";
 
-  String patron = r'\w+@\w+\.\w+';
-  RegExp regex = RegExp(patron);
+  String pattern =
+      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+  RegExp regex = RegExp(pattern);
+  //String patron = r'\w+@\w+\.\w+';
+  //RegExp regex = RegExp(patron);
 
   if (!regex.hasMatch(formEmail)) return "Email invalido";
 
@@ -53,34 +56,61 @@ void showDialogMessage(BuildContext context,
     titleActionOne,
     titleActionTwo,
     Function? callbackYes,
-    Function? callbackNo}) {
+    Function? callbackNo,
+    uid}) {
+  //BuildContext dialogContext = context;
+
   showPlatformDialog(
       context: context,
       builder: (_) => BasicDialogAlert(
-            title: Text(isNull(title) ? title : 'Mensaje',
+            title: Text(isNotNull(title) ? title : 'Mensaje',
                 style: const TextStyle(fontSize: 20),
-                textAlign: TextAlign.justify),
+                textAlign: TextAlign.start),
             actions: [
               BasicDialogAction(
-                title: Text(isNull(titleActionOne) ? titleActionOne : 'Sí'),
+                title: Text(
+                  isNotNull(titleActionTwo) ? titleActionTwo : 'No',
+                  style: const TextStyle(fontSize: 22),
+                ),
                 onPressed: () {
-                  if (isNull(callbackYes)) {
-                    callbackYes!(context);
+                  if (isNotNull(callbackNo)) {
+                    callbackNo!();
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+              BasicDialogAction(
+                title: Text(
+                  isNotNull(titleActionOne) ? titleActionOne : 'Sí',
+                  style: const TextStyle(fontSize: 22),
+                ),
+                onPressed: () {
+                  if (isNotNull(callbackYes)) {
+                    callbackYes!();
                   } else {
                     showToast('Aceptado');
                   }
                   Navigator.pop(context);
                 },
               ),
-              BasicDialogAction(
-                title: Text(isNull(titleActionTwo) ? titleActionTwo : 'No'),
-                onPressed: () {
-                  if (isNull(callbackNo)) {
-                    callbackNo!(context);
-                  }
-                  Navigator.pop(context);
-                },
-              )
             ],
           ));
+}
+
+String? validateInt(value) {
+  if (value == null || value.isEmpty) {
+    return 'Por favor ingrese un número entero.';
+  }
+  final isNumeric = double.tryParse(value);
+  if (isNumeric == null) {
+    return 'Debe ser un número válido.';
+  }
+  return null; // Todo está bien
+}
+
+String? validatorCombo<T>(T? value) {
+  if (value == null) {
+    return 'Por favor, seleccione una opción';
+  }
+  return null; // La validación pasó correctamente
 }
