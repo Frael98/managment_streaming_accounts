@@ -24,12 +24,12 @@ void main() {
   // perro.nombre = 'otro'; - es final no puede ser modificado
   print(perro.nombre);
 
-  Subscription netflix = Subscription(
+ /*  Subscription netflix = Subscription(
       idAccount: ObjectId(),
       clients: List.filled(Random().nextInt(5), ObjectId()),
       dateStarted: DateTime.now(),
       dateFinish: DateTime.now(),
       valueToPay: 2.2);
-
-  print(netflix.toString());
+ */
+  /* print(netflix.toString()); */
 }

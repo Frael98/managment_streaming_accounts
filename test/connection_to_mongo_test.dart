@@ -68,8 +68,9 @@ void main() async {
 
     print(objPlatform.toString()); */
 
-    var collectionAccount = db.collection('account');
-   /* 
+    //var collectionAccount = db.collection('account');
+    var collection = db.collection('subscription');
+    /* 
 
     final lookupTypeAccount = Lookup(
         from: "type_account",
@@ -95,8 +96,15 @@ void main() async {
 
     var result = await collectionAccount.aggregateToStream(pipeline).toList(); */
 
-    final match = Match({'_id': ObjectId.fromHexString('665e7d97b0f84e9183cbf54d')});
-    final lookupTypeAccount = Lookup(
+    //final match = Match({'_id': ObjectId.fromHexString('665e7d97b0f84e9183cbf54d')});
+
+    /* final match = Match({
+      'state': {
+        '\$nin': ['caida', 'ocupada']
+      }
+    }); */
+
+    /* final lookupTypeAccount = Lookup(
         from: "type_account",
         localField: "type_account",
         foreignField: "_id",
@@ -117,13 +125,73 @@ void main() async {
         .addStage(unwind)
         .addStage(lookupPlatform)
         .addStage(unwind2)
+        .build(); */
+
+    final lookupClients = Lookup(
+        from: "clients",
+        localField: "clients",
+        foreignField: "_id",
+        as: "clients");
+
+    final lookupAccount = Lookup(
+        from: "account",
+        localField: "account",
+        foreignField: "_id",
+        as: "account");
+
+    final lookupPlatform = Lookup(
+        from: "platform",
+        localField: "account.platform",
+        foreignField: "_id",
+        as: "platform");
+
+    final lookupTypeAccount = Lookup(
+        from: "type_account",
+        localField: "account.type_account",
+        foreignField: "_id",
+        as: "type_account");
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(lookupClients)
+        .addStage(lookupAccount)
+        .addStage(Unwind(const Field('account')))
+        .addStage(lookupPlatform)
+        //.addStage(Unwind(const Field('platform')))
+        .addStage(lookupTypeAccount)
+        .addStage(ReplaceRoot({
+          "\$mergeObjects": [
+            "\$\$ROOT",
+            {
+              "account": {
+                "\$arrayElemAt": [
+                  {
+                    "\$map": {
+                      "input": ["\$account"],
+                      "as": "acc",
+                      "in": {
+                        "\$mergeObjects": [
+                          "\$\$acc",
+                          {"platform": "\$platform"},
+                          {"type_account": "\$type_account"}
+                        ]
+                      }
+                    }
+                  },
+                  0
+                ]
+              }
+            }
+          ]
+        }))
         .build();
 
-    var result = await collectionAccount.aggregateToStream(pipeline).toList();
+    //var result = await collection?.aggregateToStream(pipeline).toList();
+    var result = await collection.aggregateToStream(pipeline).toList();
 
-    print(result.first);
+    print(result);
     for (var element in result) {
-      print(Account.fromMapObject(element).toString());
+      //print(Account.fromMapObject(element).toString());
+      print(element.toString());
     }
     await db.close();
 

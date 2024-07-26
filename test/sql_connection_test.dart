@@ -3,9 +3,11 @@
 import 'package:f_managment_stream_accounts/db/sqlite/sqlflite_db.dart';
 import 'package:f_managment_stream_accounts/models/type_account.dart';
 import 'package:flutter_test/flutter_test.dart';
+// ignore: depend_on_referenced_packages
+import 'package:sqflite_common/sqlite_api.dart';
 
 void main() async {
-  var db;
+  Database? db;
   setUpAll(() async {
     initOrCreateTables();
     db = await connectToDb();
@@ -13,9 +15,9 @@ void main() async {
 
   var typeAccount = TypeAccount(nameTypeAccount: 'PREMIUN');
 
-  await db.insert('TYPE_ACCOUNT', typeAccount.toMap());
+  await db!.insert('TYPE_ACCOUNT', typeAccount.toMap());
 
-  final data = await db.query('TYPE_ACCOUNT');
+  final data = await db!.query('TYPE_ACCOUNT');
 
   for (var e in data) {
     print(e.toString());
