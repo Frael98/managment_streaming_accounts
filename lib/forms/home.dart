@@ -5,18 +5,16 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/cliente/client_form.dart';
-import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_card.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_expansion_tile.dart';
-import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
-import 'package:f_managment_stream_accounts/forms/log_in.dart';
-import 'package:f_managment_stream_accounts/forms/plataforma/platform_list.dart';
-import 'package:f_managment_stream_accounts/forms/subscripcion/subscription_list.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
+import 'package:f_managment_stream_accounts/router/rutas.dart';
+import 'package:f_managment_stream_accounts/shared_preferences/preferences.dart';
 import 'package:f_managment_stream_accounts/utils/constantes.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
@@ -475,14 +473,12 @@ class HomeScreen extends State<Home> {
         leading: const Icon(Icons.logout),
         title: const Text('Cerrar sesión'),
         onTap: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const LogIn(title: ''),
-            ),
-            (route) =>
-                false, // Elimina todas las rutas anteriores del historial de navegación
-          );
+          if(MySharedPreferences.getIsLogged()){
+            MySharedPreferences.setIsLogged(false);
+            MySharedPreferences.prefs.remove('usuario');
+            MySharedPreferences.prefs.remove('correo');
+          }
+          context.goNamed(RutasNombres.login.name);
         },
       ),
     ];
@@ -495,48 +491,52 @@ class HomeScreen extends State<Home> {
         leading: const Icon(Icons.contact_mail),
         title: const Text('Clientes'),
         onTap: () {
-          Navigator.push(
+          /* Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ClientListView(),
             ),
-          );
+          ); */
+          context.goNamed(RutasNombres.clientes.name);
         },
       ),
       ListTile(
         leading: const Icon(Icons.account_box_rounded),
         title: const Text('Cuentas'),
         onTap: () {
-          Navigator.push(
+          /* Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => AccountListView(),
             ),
-          );
+          ); */
+          context.goNamed(RutasNombres.cuentas.name);
         },
       ),
       ListTile(
         leading: const Icon(Icons.shop_rounded),
         title: const Text('Suscripciones'),
         onTap: () {
-          Navigator.push(
+          /* Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const SubscriptionListView(),
             ),
-          );
+          ); */
+          context.goNamed(RutasNombres.susbscripcion.name);
         },
       ),
       ListTile(
         leading: const Icon(Icons.dvr),
         title: const Text('Plataformas'),
         onTap: () {
-          Navigator.push(
+          /* Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const PlatformListView(),
             ),
-          );
+          ); */
+          context.goNamed(RutasNombres.platformas.name);
         },
       ),
     ];

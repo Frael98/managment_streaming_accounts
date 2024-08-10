@@ -2,17 +2,18 @@ import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/user_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
-//import 'package:f_managment_stream_accounts/controllers/sqlite/user_controller_sqlite.dart';
-import 'package:f_managment_stream_accounts/forms/home.dart';
-import 'package:f_managment_stream_accounts/forms/sign_up.dart';
 import 'package:f_managment_stream_accounts/models/user.dart';
+import 'package:f_managment_stream_accounts/router/rutas.dart';
+import 'package:f_managment_stream_accounts/shared_preferences/preferences.dart';
+import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 //import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:toast/toast.dart';
 
 class LogIn extends StatefulWidget {
-  const LogIn({required this.title, super.key});
-  final String title;
+  const LogIn({super.key});
+  //final String title;
 
   @override
   State<StatefulWidget> createState() {
@@ -22,6 +23,7 @@ class LogIn extends StatefulWidget {
 
 ///  Manejador de los estados de mi clase
 class LogInState extends State<LogIn> {
+  final GlobalKey<FormState> _key = GlobalKey();
   late TextEditingController userController;
   late TextEditingController passwordController;
 
@@ -31,6 +33,7 @@ class LogInState extends State<LogIn> {
     userController = TextEditingController();
     passwordController = TextEditingController();
     super.initState();
+    validateUserLogged();
   }
 
   @override
@@ -51,33 +54,28 @@ class LogInState extends State<LogIn> {
     Toast.show(message, duration: Toast.lengthLong, gravity: Toast.bottom);
   }
 
-// Valida Campos vacios
-  bool isValid() {
-    return userController.text.isNotEmpty && passwordController.text.isNotEmpty;
-  }
-
 // Limpia campos
   void clearTexts() {
-    userController.text = '';
-    passwordController.text = '';
+    userController.clear();
+    passwordController.clear();
   }
 
   /// Logeo
   void logIn() async {
-    if (!isValid()) {
-      showToast('action', '', 'Por favor llene los campos');
-      return;
-    }
+    String user = userController.text.trim();
+    String pass = passwordController.text.trim();
 
-    String user = userController.text;
-    String pass = passwordController.text;
-
+    log(user);
     //var datos = await UserControllerSQLite.logIn(User.validation(user, pass));
     var datos = await UserControllerMongo.logIn(User.validation(user, pass));
     var name = '', email = '';
 
     if (datos != null) {
       log(datos.toString());
+      await MySharedPreferences.prefs.setString('usuario', datos.name!);
+      await MySharedPreferences.prefs.setString('correo', datos.email!);
+      MySharedPreferences.setIsLogged(true);
+
       name = datos.name!;
       email = datos.email!;
     } else {
@@ -87,10 +85,9 @@ class LogInState extends State<LogIn> {
 
     showToast(
         'Iniciar Sesion',
-        ' ${userController.text.trim()} pass: ${passwordController.text.trim()}',
         ' Acceso concedido');
     // ignore: use_build_context_synchronously
-    Navigator.push(
+    /* Navigator.push(
         // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
@@ -98,68 +95,95 @@ class LogInState extends State<LogIn> {
             usuario: name,
             correo: email,
           ),
-        ));
+        )); */
+    // ignore: use_build_context_synchronously
+    context.pushReplacementNamed(RutasNombres.inicio.name,
+        queryParameters: {'usuario': name, 'correo': email});
     clearTexts();
   }
 
   Widget formLogIn() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('Inicio de sesión',
-              style: TextStyle(
-                  color: Colors.amber, fontSize: 40, fontFamily: 'bold')),
-          /* Image(image: ImageProvider), */
-          Padding(
-            padding:
-                const EdgeInsets.only(bottom: 20.0, left: 50.0, right: 50.0),
-            child: TextField(
-              style: const TextStyle(color: Colors.white),
-              controller: userController,
-              decoration: const InputDecoration(labelText: 'Usuario'),
-              maxLength: 25,
+    return Form(
+      key: _key,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Inicio de sesión',
+                style: TextStyle(
+                    color: Colors.amber, fontSize: 40, fontFamily: 'bold')),
+            /* Image(image: ImageProvider), */
+            Padding(
+              padding:
+                  const EdgeInsets.only(bottom: 20.0, left: 50.0, right: 50.0),
+              child: TextFormField(
+                validator: messageValidator,
+                style: const TextStyle(color: Colors.white),
+                controller: userController,
+                decoration: const InputDecoration(
+                  labelText: 'Usuario',
+                ),
+                maxLength: 25,
+              ),
             ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.only(bottom: 20.0, left: 50.0, right: 50.0),
-            child: TextField(
-              style: const TextStyle(color: Colors.white),
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Constraseña'),
-              maxLength: 20,
-              obscureText: true,
+            Padding(
+              padding:
+                  const EdgeInsets.only(bottom: 20.0, left: 50.0, right: 50.0),
+              child: TextFormField(
+                validator: messageValidator,
+                style: const TextStyle(color: Colors.white),
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Constraseña'),
+                maxLength: 20,
+                obscureText: true,
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
-            child: CustomElevatedButton(
-              function: () async {
-                logIn();
-              },
-              color: Colors.blue,
-              title: 'Iniciar Sesión',
+            const SizedBox(
+              height: 20,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
-            child: CustomElevatedButton(
-              color: Colors.blueGrey,
-              function: () async {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SignUpScreen()));
-              },
-              title: 'Registrarse',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+              child: CustomElevatedButton(
+                function: () async {
+                  //logIn();
+                  if (_key.currentState!.validate()) {
+                    logIn();
+                  }
+                },
+                color: Colors.blue,
+                title: 'Iniciar Sesión',
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 5),
+              child: CustomElevatedButton(
+                color: Colors.blueGrey,
+                function: () async {
+                  /* Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SignUpScreen())); */
+                  context.goNamed(RutasNombres.signUp.name);
+                },
+                title: 'Registrarse',
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void validateUserLogged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      var logged = MySharedPreferences.getIsLogged();
+      if (isNotNull(logged) && logged) {
+        log('usuario esta logeado');
+        context.goNamed(RutasNombres.inicio.name, queryParameters: {
+          'usuario': MySharedPreferences.prefs.getString('usuario')!,
+          'correo': MySharedPreferences.prefs.getString('correo')!
+        });
+      }
+    });
   }
 }

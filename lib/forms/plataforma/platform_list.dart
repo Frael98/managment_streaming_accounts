@@ -8,6 +8,8 @@ import 'package:f_managment_stream_accounts/utils/constantes.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+import 'package:go_router/go_router.dart';
+
 class PlatformListView extends StatefulWidget {
   const PlatformListView({super.key});
 
@@ -92,13 +94,14 @@ class _PlatformListViewState extends State<PlatformListView> {
 
   /// Abrir el formulario para actualizar o agregar cliente
   static void onPlatformForm(BuildContext context, {dynamic idPlatform}) {
-    Navigator.push(
+    /* Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PlatformFormScreen(
           idPlatform: idPlatform,
         ),
       ),
-    );
+    ); */
+    context.goNamed('form-plataformas',queryParameters: {'idPlatform': idPlatform});
   }
 } // End class

@@ -2,15 +2,15 @@ import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/account_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/subscription_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_account_card.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
-import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
 import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/models/subscription.dart';
+import 'package:f_managment_stream_accounts/router/rutas.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 //import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -85,9 +85,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showDialogMessage(context,
-              title: 'Esta seguro de guardar esta subscripcion',
-              callbackYes: _saveSubscription);
+          if(isNotNull(widget.idSubscription)){
+            log('Actualiza subscripcion');
+          }else {
+            showDialogMessage(context,
+                title: 'Esta seguro de guardar esta subscripcion',
+                callbackYes: _saveSubscription);
+          }
         },
         backgroundColor: Colors.green,
         child: const Icon(Icons.save),
@@ -136,9 +140,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
               ? Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                  child: ImprovedCard(
+                  child: AccountCardSubs(
                     account: _account,
-                    disableColorDelete: true,
+                    disableColorDelete: isNotNull(widget.idSubscription) ? true : false,
                     deleteAccount: () {
                       if (_subscription == null) {
                         setState(() {
@@ -274,14 +278,16 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
   /// Agrega una cuenta en vista
   void _addAccount() async {
-    final result = await Navigator.push(
+    /* final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AccountListView(
           returnAccount: true,
         ),
       ),
-    );
+    ); */
+    final result = await context.pushNamed<Account>(RutasNombres.cuentas.name,
+        queryParameters: {'returnAccount': 'true'});
     if (result != null) {
       setState(() {
         _account = result;
@@ -300,14 +306,17 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       return;
     }
 
-    final result = await Navigator.push(
+    /* final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ClientListView(
           returnClient: true,
         ),
       ),
-    );
+    ); */
+    // ignore: unused_local_variable
+    final result = await context.pushNamed<Client>(RutasNombres.clientes.name,
+        queryParameters: {'returnClient': 'true'});
 
     // si resultado no es nula y el cliente no existe en la lista lo agrega
     if (result != null && !_clients.any((c) => c.uid == result.uid)) {
@@ -317,7 +326,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         _clients.add(result);
         _expandedClients.add(false);
         TextEditingController controller = TextEditingController();
-        _pagaController[result.uid] = controller;
+        _pagaController[result.uid!] = controller;
       });
     } else {
       // ignore: use_build_context_synchronously
@@ -334,6 +343,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           codSubscription: 'SUBS-$_codSubscription',
           account: Account.uid(uid: _account!.uid!),
           clients: _clients,
+          createdAt: DateTime.now(),
           dateStarted: DateTime.now(),
           dateFinish: DateTime.now().add(const Duration(days: 20)),
           valueToPay: 2.5);
@@ -361,5 +371,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         content: Text('Seleccione una cuenta y al menos un cliente'),
       ));
     }
+  }
+
+  void _updateSubscription() async {
+
   }
 }

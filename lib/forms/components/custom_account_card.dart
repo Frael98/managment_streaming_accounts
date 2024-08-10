@@ -1,14 +1,23 @@
+import 'package:f_managment_stream_accounts/forms/components/custom_date_picker.dart';
 import 'package:f_managment_stream_accounts/models/account.dart';
 import 'package:flutter/material.dart';
 
+import '../../utils/constantes.dart';
+import '../../utils/helpful_functions.dart';
+
 // ignore: must_be_immutable
-class ImprovedCard extends StatelessWidget {
+class AccountCardSubs extends StatelessWidget {
   Account? account;
   Function? deleteAccount;
   bool disableColorDelete;
   int? quantityInSubscription;
-  ImprovedCard(
-      {Key? key, this.account, this.deleteAccount, this.quantityInSubscription, this.disableColorDelete = false})
+
+  AccountCardSubs(
+      {Key? key,
+      this.account,
+      this.deleteAccount,
+      this.quantityInSubscription,
+      this.disableColorDelete = false})
       : super(key: key);
 
   @override
@@ -71,13 +80,16 @@ class ImprovedCard extends StatelessWidget {
               fontFamily: 'Quicksand',
               fontWeight: FontWeight.bold,
               fontSize: constraints.maxWidth > 600 ? 24 : 20,
-              color: Colors.white,
+              color: isNotNull(account!.state)
+                  ? colorStates[account!.state]
+                  : Colors.grey,
             ),
           ),
         ),
         IconButton(
           //disabledColor: disableColorDelete ? Colors.grey : Colors.amber,
-          icon: Icon(Icons.delete, color:  disableColorDelete ? Colors.grey : Colors.red),
+          icon: Icon(Icons.delete,
+              color: disableColorDelete ? Colors.grey : Colors.red),
           onPressed: () {
             if (deleteAccount != null) {
               deleteAccount!();
@@ -124,38 +136,51 @@ class ImprovedCard extends StatelessWidget {
   }
 
   Widget _buildFooter(BoxConstraints constraints) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.event_seat_outlined),
-                const SizedBox(
-                  width: 5,
-                ),
-                Text(
-                  '${account!.perfilQuantity}',
-                  style: const TextStyle(color: Colors.white70),
+                Row(
+                  children: [
+                    const Icon(Icons.event_seat_outlined),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      '${account!.perfilQuantity}',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
                 ),
               ],
             ),
-            /* const Text(
-              ' 5',
-              style: TextStyle(color: Colors.white70),
-            ), */
+            Text(
+              '\$${account!.price}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: constraints.maxWidth > 600 ? 36 : 30,
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
-        Text(
-          '\$${account!.price}',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: constraints.maxWidth > 600 ? 36 : 30,
-            color: Colors.white,
-          ),
-        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+                'Fecha Expira: ${Format.toDateMonthLetter(account!.registerDate!)}'),
+            (account!.registerDate!.toLocal().isAfter(DateTime.now()))
+                ? const Text('')
+                : const Text(
+                    'Expirado',
+                    style: TextStyle(color: Colors.red),
+                  )
+          ],
+        )
       ],
     );
   }
