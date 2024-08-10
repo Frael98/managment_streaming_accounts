@@ -31,10 +31,15 @@ class UserControllerMongo {
 
   /// Iniciar sesion
   static Future<User?> logIn(User user) async {
-    final userCollection = await getUserCollection();
-    var userLoged = await userCollection
-        ?.findOne({"user": user.user, "password": user.password});
+    try {
+      final userCollection = await getUserCollection();
+      var userLoged = await userCollection
+          ?.findOne({"user": user.user, "password": user.password});
 
-    return User.fromMap(userLoged!);
+      return User.fromMap(userLoged!);
+    } catch (e) {
+      log('$e');
+      return null;
+    }
   }
 }
