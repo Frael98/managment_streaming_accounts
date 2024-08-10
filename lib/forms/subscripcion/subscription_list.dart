@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/subscription_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/forms/subscripcion/subscription_form.dart';
 import 'package:f_managment_stream_accounts/models/subscription.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SubscriptionListView extends StatefulWidget {
   const SubscriptionListView({super.key});
@@ -42,12 +42,13 @@ class _SubscriptionListViewState extends State<SubscriptionListView> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
+          /* Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SubscriptionFormScreen(),
             ),
-          );
+          ); */
+          context.goNamed('form-subscripcion');
         },
         backgroundColor: Colors.green,
         child: const Icon(Icons.add),
@@ -76,9 +77,10 @@ class _SubscriptionListViewState extends State<SubscriptionListView> {
               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: InkWell(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  /*  Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return SubscriptionFormScreen(idSubscription: subscription.uid,);
-                  }));
+                  })); */
+                  context.goNamed('form-subscripcion', queryParameters: { 'idSubscription': subscription.uid!.oid});
                 },
                 splashColor: Colors.white.withOpacity(0.1),
                 child: Column(
