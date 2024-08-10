@@ -13,6 +13,7 @@ class CustomTextFormField extends StatelessWidget {
   final int maxLine;
   final bool enabled;
   final TextInputType? keyboardType;
+  final int? maxLength;
 
   const CustomTextFormField(
       {super.key,
@@ -27,11 +28,13 @@ class CustomTextFormField extends StatelessWidget {
       this.minLine = 1,
       this.autofocus = false,
       this.enabled = true,
-      this.keyboardType });
+      this.keyboardType ,
+      this.maxLength});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      maxLength: maxLength,
         enabled: enabled,
         keyboardType: keyboardType,
         minLines: minLine,
