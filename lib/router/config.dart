@@ -67,7 +67,13 @@ final routes = <RouteBase>[
               GoRoute(
                   path: 'form-clientes',
                   name: 'form-clientes',
-                  builder: (context, state) => ClientFormScreen(0))
+                  builder: (context, state) {
+                    final idClient = isNotNull(state.uri.queryParameters['uid'])
+                        ? ObjectId.parse(
+                            state.uri.queryParameters['uid']!)
+                        : 0;
+                    return ClientFormScreen(idClient);
+                  })
             ]),
         GoRoute(
             path: RutasNombres.platformas.path,
