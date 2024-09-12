@@ -38,12 +38,13 @@ class SubscriptionControllerMongo {
   static Future<String> updateSubscription(Subscription subscription) async {
     final collection = await _getCollection();
     var result = await collection!.updateOne(
-      where.eq('_id', subscription.uid),
-      modify
-          .set('date_started', subscription.dateStarted)
-          .set('date_finish', subscription.dateFinish)
-          .set('value_to_pay', subscription.valueToPay),
-    );
+        where.eq('_id', subscription.uid),
+        modify
+            .set('updated_at', DateTime.now())
+            .set('date_started', subscription.dateStarted)
+            .set('date_finish', subscription.dateFinish)
+            .set('clients', subscription.clients!.map((c) => c.toMapIdAndPrice()).toList()),
+        );
 
     if (result.isSuccess) {
       return "Subscripcion actualizada correctamente";
@@ -96,7 +97,7 @@ class SubscriptionControllerMongo {
         .addStage(lookupClients)
         .addStage(lookupAccount)
         .addStage(Unwind(const Field(
-            'account'))) // unwind solo porque es solo un objeto necesario
+            'account'))) // unwind - solo porque es solo un objeto necesario
         .addStage(lookupPlatform)
         .addStage(lookupTypeAccount)
         .addStage(ReplaceRoot({
@@ -127,9 +128,14 @@ class SubscriptionControllerMongo {
         .addStage(Unwind(const Field(
             'account.platform'))) // unwind solo porque es solo un objeto necesario
         .addStage(Unwind(const Field('account.type_account')))
+        .addStage(Unset([
+          'type_account',
+          'platform'
+        ])) // quitamos los campos que ya no necesitamos
         .build();
 
     var result = await collection!.aggregateToStream(pipeline).first;
+
     return Subscription.fromMapObject(result);
   }
 
@@ -228,5 +234,112 @@ class SubscriptionControllerMongo {
     final result = await collection!.find().toList();
 
     return result.map((s) => Account.uid(uid: s['account'])).toList();
+  }
+
+  static Future<Subscription> getSubscriptionV2(ObjectId _id) async {
+    final collection = await _getCollection();
+
+    final match = Match({'_id': _id});
+
+    final lookupClients = Lookup(
+        from: "clients",
+        localField: "clients.uid",
+        foreignField: "_id",
+        as: "tempClients");
+
+    final lookupAccount = Lookup(
+        from: "account",
+        localField: "account",
+        foreignField: "_id",
+        as: "account");
+
+    final lookupPlatform = Lookup(
+        from: "platform",
+        localField: "account.platform",
+        foreignField: "_id",
+        as: "platform");
+
+    final lookupTypeAccount = Lookup(
+        from: "type_account",
+        localField: "account.type_account",
+        foreignField: "_id",
+        as: "type_account");
+
+    final replaceRoot = ReplaceRoot({
+      "\$mergeObjects": [
+        "\$\$ROOT",
+        {
+          "account": {
+            "\$arrayElemAt": [
+              {
+                "\$map": {
+                  "input": ["\$account"],
+                  "as": "acc",
+                  "in": {
+                    "\$mergeObjects": [
+                      "\$\$acc",
+                      {"platform": "\$platform"},
+                      {"type_account": "\$type_account"}
+                    ]
+                  }
+                }
+              },
+              0
+            ]
+          }
+        }
+      ]
+    });
+
+    final addFields = AddFields({
+      'tempClients': {
+        '\$map': {
+          'input': '\$tempClients',
+          'as': 'client',
+          'in': {
+            '\$mergeObjects': [
+              '\$\$client',
+              {
+                'value_to_pay': {
+                  '\$arrayElemAt': [
+                    '\$clients.value_to_pay',
+                    {
+                      '\$indexOfArray': ['\$clients.uid', '\$\$client._id']
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    });
+
+    final project = Project({
+      'clients': '\$tempClients',
+      'cod_subscription': 1,
+      'account': 1,
+      'date_started': 1,
+      'date_finish': 1,
+      'state': 1,
+    });
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(match)
+        .addStage(lookupClients)
+        .addStage(lookupAccount)
+        .addStage(Unwind(const Field('account')))
+        .addStage(lookupPlatform)
+        .addStage(lookupTypeAccount)
+        .addStage(replaceRoot)
+        .addStage(addFields)
+        .addStage(project)
+        .addStage(Unwind(const Field(
+            'account.platform'))) // unwind solo porque es solo un objeto necesario
+        .addStage(Unwind(const Field('account.type_account')))
+        .build();
+    var result = await collection!.aggregateToStream(pipeline).first;
+    log(result.toString());
+    return Subscription.fromMapObject(result)!;
   }
 }
