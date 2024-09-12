@@ -2,11 +2,11 @@ import 'dart:developer';
 import 'dart:typed_data';
 //import 'package:f_managment_stream_accounts/controllers/sqlite/client_controller_sqlite.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/forms/cliente/client_form.dart';
 import 'package:f_managment_stream_accounts/forms/components/search_delegate.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
 const _defaultClientImage = 'assets/ichi.jpg';
@@ -27,14 +27,14 @@ class ClientListViewState extends State<ClientListView> {
 
   @override
   void initState() {
-    initializeClients();
+    _initializeClients();
     setState(() {
       returnClient = widget.returnClient;
     });
     super.initState();
   }
 
-  Future initializeClients() async {
+  Future _initializeClients() async {
     try {
       List<Client>? clientesCargados = await ClientControllerMongo.getClients();
       //await ClientControllerSQLite.getClients();
@@ -60,7 +60,8 @@ class ClientListViewState extends State<ClientListView> {
               //var cliente = await
               showSearch(
                   context: context,
-                  delegate: SearchFieldDelegate(clientes!, getName));
+                  delegate: SearchFieldDelegate(clientes!, getName,
+                      buildResultsWidget: buildClientTile));
               //, clientesHistorial!));
 
               //clientesHistorial!.insert(0, cliente as Client);
@@ -80,17 +81,29 @@ class ClientListViewState extends State<ClientListView> {
   }
 
   /// Abrir el formulario para actualizar o agregar cliente
-  static void _onClientForm(BuildContext context, {dynamic idClient}) {
-    Navigator.push(
+  void _onClientForm(BuildContext context, {dynamic idClient}) {
+    /* Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ClientFormScreen(idClient),
       ),
-    );
+    ).then((c) {
+      setState(() {
+        initializeClients();
+      });
+    }); */
+    context
+        .pushNamed('form-clientes',
+            queryParameters: isNotNull(idClient) ? {'uid': idClient.oid} : {})
+        .then((c) {
+      setState(() {
+        _initializeClients();
+      });
+    });
   }
 
   ///Contruir client space tile
-  static Widget buildClientTile(BuildContext context, List<Client>? clientes) {
+  Widget buildClientTile(BuildContext context, List<Client>? clientes) {
     return ListView.builder(
       itemCount: clientes!.length,
       itemBuilder: (_, index) {
@@ -126,8 +139,6 @@ class ClientListViewState extends State<ClientListView> {
             trailing: Text('${client.numberPhone} '),
             onTap: () {
               if (returnClient) {
-                log('Retornando cliente ...');
-                log(client.toString());
                 Navigator.pop(context, client);
               } else {
                 _onClientForm(context, idClient: client.id ?? client.uid);

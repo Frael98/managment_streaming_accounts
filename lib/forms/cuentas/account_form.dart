@@ -292,7 +292,8 @@ class _AccountFormScreenState extends State<AccountFormScreen> {
         perfilQuantity: int.parse(capacidad),
         price: double.parse(precio),
         timeLimit: tiempoComprado,
-        state: StateAccount.available.nombre);
+        state: StateAccount.available.nombre,
+        createdAt: DateTime.now());
 
     log(account.toString());
 

@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/forms/cliente/client_form.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_card.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_expansion_tile.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
@@ -354,13 +353,21 @@ class HomeScreen extends State<Home> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(20),
                               onTap: () {
-                                Navigator.push(
+                                /*  Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         ClientFormScreen(client.uid),
                                   ),
-                                );
+                                ); */
+                                context.pushNamed('form-clientes',
+                                    queryParameters: {
+                                      'uid': client.uid!.oid
+                                    }).then((n) {
+                                  setState(() {
+                                    _initData();
+                                  });
+                                });
                               },
                               child: Container(
                                 decoration: BoxDecoration(
@@ -473,7 +480,7 @@ class HomeScreen extends State<Home> {
         leading: const Icon(Icons.logout),
         title: const Text('Cerrar sesión'),
         onTap: () {
-          if(MySharedPreferences.getIsLogged()){
+          if (MySharedPreferences.getIsLogged()) {
             MySharedPreferences.setIsLogged(false);
             MySharedPreferences.prefs.remove('usuario');
             MySharedPreferences.prefs.remove('correo');
@@ -497,7 +504,13 @@ class HomeScreen extends State<Home> {
               builder: (context) => ClientListView(),
             ),
           ); */
-          context.goNamed(RutasNombres.clientes.name);
+          //context.goNamed(RutasNombres.clientes.name);
+          //Direcciona a lista de clientes y recargamos los datos
+          context.pushNamed(RutasNombres.clientes.name).then((n) {
+            setState(() {
+              _initData();
+            });
+          });
         },
       ),
       ListTile(

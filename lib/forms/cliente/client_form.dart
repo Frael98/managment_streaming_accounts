@@ -273,7 +273,7 @@ class _ClientFormScreenState extends State<ClientFormScreen> {
         limpiarTexts();
       }
 
-      showToast(message);
+      //showToast(message);
       goToClientList();
     } catch (e) {
       log('Error al actualizar al usuario: $e');

@@ -17,11 +17,11 @@ class _SubscriptionListViewState extends State<SubscriptionListView> {
 
   @override
   void initState() {
-    initializeSubscriptions();
+    _initializeSubscriptions();
     super.initState();
   }
 
-  Future initializeSubscriptions() async {
+  Future _initializeSubscriptions() async {
     try {
       List<Subscription>? tmp =
           await SubscriptionControllerMongo.getSubscriptionsList();
@@ -48,7 +48,11 @@ class _SubscriptionListViewState extends State<SubscriptionListView> {
               builder: (context) => SubscriptionFormScreen(),
             ),
           ); */
-          context.goNamed('form-subscripcion');
+          context.pushNamed('form-subscripcion').then((s){
+            setState(() {
+              _initializeSubscriptions();
+            });
+          });
         },
         backgroundColor: Colors.green,
         child: const Icon(Icons.add),
@@ -80,7 +84,11 @@ class _SubscriptionListViewState extends State<SubscriptionListView> {
                   /*  Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return SubscriptionFormScreen(idSubscription: subscription.uid,);
                   })); */
-                  context.goNamed('form-subscripcion', queryParameters: { 'idSubscription': subscription.uid!.oid});
+                  context.pushNamed('form-subscripcion', queryParameters: { 'idSubscription': subscription.uid!.oid}).then((s){
+                    setState(() {
+                      _initializeSubscriptions();
+                    });
+                  });
                 },
                 splashColor: Colors.white.withOpacity(0.1),
                 child: Column(

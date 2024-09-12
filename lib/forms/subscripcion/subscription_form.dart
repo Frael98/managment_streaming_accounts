@@ -46,13 +46,18 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   //Obtener y setear datos de subscripción
   void getSubscription() {
     if (isNotNull(widget.idSubscription)) {
-      SubscriptionControllerMongo.getSubscription(widget.idSubscription!)
+      //SubscriptionControllerMongo.getSubscription(widget.idSubscription!)
+      SubscriptionControllerMongo.getSubscriptionV2(widget.idSubscription!)
           .then((s) {
         setState(() {
           _subscription = s;
           _account = s.account;
           _clients = s.clients!;
           _accountCapacity = _account!.perfilQuantity!;
+          for (var c in _clients) {
+            _pagaController[c.uid!] = TextEditingController();
+            _pagaController[c.uid]!.text = c.valueToPay.toString();
+          }
         });
       });
     }
@@ -85,9 +90,10 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if(isNotNull(widget.idSubscription)){
+          if (isNotNull(widget.idSubscription)) {
             log('Actualiza subscripcion');
-          }else {
+            _updateSubscription();
+          } else {
             showDialogMessage(context,
                 title: 'Esta seguro de guardar esta subscripcion',
                 callbackYes: _saveSubscription);
@@ -142,7 +148,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                   child: AccountCardSubs(
                     account: _account,
-                    disableColorDelete: isNotNull(widget.idSubscription) ? true : false,
+                    disableColorDelete:
+                        isNotNull(widget.idSubscription) ? true : false,
                     deleteAccount: () {
                       if (_subscription == null) {
                         setState(() {
@@ -259,12 +266,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                   const SizedBox(height: 10),
                   CustomTextFormField(
                     labelText: '\$${_account!.price}',
-                    controller: //_pagaController.containsKey(client.uid)
-                        _pagaController[client.uid]
-                    //: TextEditingController()
-                    ,
-                    //validator: ,
+                    controller: _pagaController[client.uid],
                     keyboardType: TextInputType.number,
+                    //validator: ,
                   ),
                   // Add more client details here
                 ],
@@ -278,14 +282,6 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
   /// Agrega una cuenta en vista
   void _addAccount() async {
-    /* final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AccountListView(
-          returnAccount: true,
-        ),
-      ),
-    ); */
     final result = await context.pushNamed<Account>(RutasNombres.cuentas.name,
         queryParameters: {'returnAccount': 'true'});
     if (result != null) {
@@ -306,14 +302,6 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       return;
     }
 
-    /* final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ClientListView(
-          returnClient: true,
-        ),
-      ),
-    ); */
     // ignore: unused_local_variable
     final result = await context.pushNamed<Client>(RutasNombres.clientes.name,
         queryParameters: {'returnClient': 'true'});
@@ -325,8 +313,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       setState(() {
         _clients.add(result);
         _expandedClients.add(false);
-        TextEditingController controller = TextEditingController();
-        _pagaController[result.uid!] = controller;
+        //TextEditingController controller = TextEditingController();
+        //_pagaController[result.uid!] = controller;
+        _pagaController[result.uid!] = TextEditingController();
       });
     } else {
       // ignore: use_build_context_synchronously
@@ -339,14 +328,19 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   /// Guardar subscripcion en base
   void _saveSubscription() async {
     if (_account != null && _clients.isNotEmpty) {
+      for (var client in _clients) {
+        client.valueToPay = double.tryParse(_pagaController[client.uid!]!.text);
+      }
+      //log('{$_clients.first}');
       Subscription subscription = Subscription(
-          codSubscription: 'SUBS-$_codSubscription',
-          account: Account.uid(uid: _account!.uid!),
-          clients: _clients,
-          createdAt: DateTime.now(),
-          dateStarted: DateTime.now(),
-          dateFinish: DateTime.now().add(const Duration(days: 20)),
-          valueToPay: 2.5);
+        codSubscription: 'SUBS-$_codSubscription',
+        account: Account.uid(uid: _account!.uid!),
+        clients: _clients,
+        createdAt: DateTime.now(),
+        dateStarted: DateTime.now(),
+        dateFinish: DateTime.now().add(const Duration(days: 20)),
+        //valueToPay: 2.5
+      );
 
       try {
         var message =
@@ -362,7 +356,15 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           log(message2);
         }
 
-        showToast(message);
+        //showToast(message);
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(message),
+        ));
+        // Evitar problemas con el contexto
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       } catch (e) {
         log("Save subscription error: $e");
       }
@@ -373,7 +375,35 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     }
   }
 
+  /// Actaulizar una subscripcion en base
   void _updateSubscription() async {
+    try {
+      for (var client in _clients) {
+        client.valueToPay = double.tryParse(_pagaController[client.uid!]!.text);
+      }
 
+      var message =
+          await SubscriptionControllerMongo.updateSubscription(_subscription!);
+
+      if (!message.contains('error')) {
+
+        String state = "parcialmente disponible";
+          if (_clients.length == _accountCapacity) state = "ocupado";
+
+          var message2 = await AccountControllerMongo.updateStateAccount(
+              _account!.uid!, state);
+
+          log(message2);
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(message),
+        ));
+
+        // ignore: use_build_context_synchronously
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      log("Error en actualizacion $e");
+    }
   }
 }

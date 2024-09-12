@@ -63,7 +63,8 @@ class AccountListViewState extends State<AccountListView> {
                       context: context,
                       delegate: SearchFieldDelegate<Account>(
                           accountList, _getName,
-                          returnData: returnAccount_, state: this));
+                          returnData: returnAccount_,
+                          buildResultsWidget: buildAccountList));
                   //log('Cuenta from search ...');
                   //log(tmp.toString());
                   // ignore: use_build_context_synchronously
@@ -76,7 +77,7 @@ class AccountListViewState extends State<AccountListView> {
                       delegate: SearchFieldDelegate<Account>(
                         accountList,
                         _getName,
-                        state: this,
+                        buildResultsWidget: buildAccountList,
                       ));
                 }
               },
