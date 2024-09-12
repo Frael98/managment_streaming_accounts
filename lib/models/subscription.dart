@@ -10,7 +10,7 @@ class Subscription extends Entity {
   List<Client>? _clients;
   DateTime? _dateStarted;
   DateTime? _dateFinish;
-  double? _valueToPay;
+  //double? _valueToPay;
 
   Subscription({
     String? codSubscription,
@@ -20,7 +20,7 @@ class Subscription extends Entity {
     List<Client>? clients,
     DateTime? dateStarted,
     DateTime? dateFinish,
-    double? valueToPay,
+    //double? valueToPay,
     state,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -30,7 +30,7 @@ class Subscription extends Entity {
         _clients = clients,
         _dateStarted = dateStarted,
         _dateFinish = dateFinish,
-        _valueToPay = valueToPay,
+        //_valueToPay = valueToPay,
         super(
             uid: uid,
             id: id,
@@ -52,14 +52,15 @@ class Subscription extends Entity {
 
       //log(clientes.toString());
       return Subscription(
-          codSubscription: map['cod_subscription'],
-          uid: map['_id'],
-          id: map['id_subscription'] ?? map['ID_SUBSCRIPTION'] ?? 0,
-          account: Account.fromMapObject(map['account'] ?? map['ACCOUNT']),
-          clients: clientes,
-          dateStarted: map['date_started'] ?? map['DATE_STARTED'],
-          dateFinish: map['date_finish'] ?? map['DATE_FINISH'],
-          valueToPay: map['value_to_pay'] ?? map['VALUE_TO_PAY']);
+        codSubscription: map['cod_subscription'],
+        uid: map['_id'],
+        id: map['id_subscription'] ?? map['ID_SUBSCRIPTION'] ?? 0,
+        account: Account.fromMapObject(map['account'] ?? map['ACCOUNT']),
+        clients: clientes,
+        dateStarted: map['date_started'] ?? map['DATE_STARTED'],
+        dateFinish: map['date_finish'] ?? map['DATE_FINISH'],
+        //valueToPay: map['value_to_pay'] ?? map['VALUE_TO_PAY']
+      );
     } catch (e) {
       throw FormatException(
           'Error al convertir el mapa a objeto Subscription $e');
@@ -71,10 +72,10 @@ class Subscription extends Entity {
     return {
       'cod_subscription': codSubscription,
       'account': account!.uid,
-      'clients': clients!.map((c) => c.uid).toList(),
+      'clients': clients!.map((c) => c.toMapIdAndPrice()).toList(),
       'date_started': dateStarted,
       'date_finish': dateFinish,
-      'value_to_pay': valueToPay,
+      //'value_to_pay': valueToPay,
       'state': state,
       'created_at': createdAt,
       'updated_at': updatedAt,
@@ -88,12 +89,12 @@ class Subscription extends Entity {
   List<Client>? get clients => _clients!;
   DateTime get dateStarted => _dateStarted!;
   DateTime get dateFinish => _dateFinish!;
-  double get valueToPay => _valueToPay!;
+  //double get valueToPay => _valueToPay!;
   String? get codSubscription => _codSubscription;
 
   @override
   String toString() {
-    return "Subscription(uid(MongoId): $uid, id(SQLite); $id, idAccount: $account, idClient: ${_clients.toString()}, dateStarted: $dateStarted, dateFinish: $dateFinish, valueToPay: $valueToPay)";
+    return "Subscription(uid(MongoId): $uid, id(SQLite); $id, idAccount: $account, idClient: ${_clients.toString()}, dateStarted: $dateStarted, dateFinish: $dateFinish)";
   }
 
   @override
@@ -103,7 +104,7 @@ class Subscription extends Entity {
       'clients': clients,
       'date_started': dateStarted.toIso8601String(),
       'date_finish': dateFinish.toIso8601String(),
-      'value_to_pay': valueToPay
+      //'value_to_pay': valueToPay
     };
   }
 }

@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
 /* Indica el tipo de cuenta creada */
+import 'dart:developer';
+
 import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
@@ -45,7 +47,7 @@ class TypeAccount extends Entity {
         state: map['STATE'] ?? map['state'],
       );
     } catch (e) {
-      print('Ocurrió un error durante la conversión del mapa: $e');
+      log('Ocurrió un error durante la conversión del mapa: $e');
       throw const FormatException(
           'Error al convertir el mapa a objeto TypeAccount');
     }
