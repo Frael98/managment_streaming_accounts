@@ -1,8 +1,4 @@
 // ignore_for_file: overridden_fields
-import 'package:f_managment_stream_accounts/forms/cliente/client_list.dart';
-import 'package:f_managment_stream_accounts/forms/cuentas/account_list.dart';
-import 'package:f_managment_stream_accounts/models/account.dart';
-import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:flutter/material.dart';
 
 class SearchFieldDelegate<T> extends SearchDelegate<T> {
@@ -23,10 +19,11 @@ class SearchFieldDelegate<T> extends SearchDelegate<T> {
 
   bool returnData;
 
-  final AccountListViewState? state;
+  /// metodo general para resolver el widget de resultado de busqueda
+  final Widget Function(BuildContext, List<T>) buildResultsWidget;
 
   SearchFieldDelegate(this.data, this.getData,
-      {this.returnData = false, this.state}); //, this.historial);
+      {this.returnData = false, required this.buildResultsWidget}); //, this.historial);
 
   ///Acciones
   @override
@@ -60,7 +57,7 @@ class SearchFieldDelegate<T> extends SearchDelegate<T> {
     return SearchResultsWidget<T>(
       data: this.filterData,
       returnData_: returnData,
-      state: state!,
+      buildResultsWidget: buildResultsWidget,
     );
   }
 
@@ -69,7 +66,7 @@ class SearchFieldDelegate<T> extends SearchDelegate<T> {
     return SearchResultsWidget<T>(
       data: this.filterData,
       returnData_: returnData,
-      state: state!,
+      buildResultsWidget: buildResultsWidget,
     );
   }
 }
@@ -78,19 +75,26 @@ class SearchResultsWidget<T> extends StatelessWidget {
   final List<T> data;
   final bool returnData_;
 
-  final AccountListViewState state; // temporal
+  //final StatefulWidget state; // temporal
+  final Widget Function(BuildContext, List<T>) buildResultsWidget;
+
   const SearchResultsWidget(
-      {super.key, required this.data, this.returnData_ = false, required this.state});
+      {super.key, required this.data, this.returnData_ = false, required this.buildResultsWidget});
 
   @override
   Widget build(BuildContext context) {
-    if (data is List<Client>) {
+    /* if (data is List<Client>) {
       return ClientListViewState.buildClientTile(context, data as List<Client>);
     }
 
-    if (data is List<Account>) {
+    if ( state is AccountListViewState && data is List<Account>) {
+      AccountListViewState newState = AccountListViewState(state);
       return state.buildAccountList(context, data as List<Account>);
-    }
+    } */
+
+   if(data.isNotEmpty){
+    return buildResultsWidget(context, data);
+   }
 
     return const Center(
       child: Card(
