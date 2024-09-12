@@ -60,7 +60,7 @@ void showDialogMessage(BuildContext context,
     uid}) {
   //BuildContext dialogContext = context;
 
-  showPlatformDialog(
+  showDialog(
       context: context,
       builder: (_) => BasicDialogAlert(
             title: Text(isNotNull(title) ? title : 'Mensaje',
@@ -76,7 +76,8 @@ void showDialogMessage(BuildContext context,
                   if (isNotNull(callbackNo)) {
                     callbackNo!();
                   }
-                  Navigator.pop(context);
+                  //Navigator.pop(context);
+                  Navigator.of(context).pop();
                 },
               ),
               BasicDialogAction(
@@ -90,7 +91,8 @@ void showDialogMessage(BuildContext context,
                   } else {
                     showToast('Aceptado');
                   }
-                  Navigator.pop(context);
+                  //Navigator.pop(context);
+                  Navigator.of(context).pop();// este pop es para que se oculte este dialogo
                 },
               ),
             ],
