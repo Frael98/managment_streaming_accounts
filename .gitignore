@@ -41,3 +41,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+concepts_learned.md
+mongo_concepts.md
+/images/mongo_concepts_images

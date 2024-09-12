@@ -340,6 +340,6 @@ class SubscriptionControllerMongo {
         .build();
     var result = await collection!.aggregateToStream(pipeline).first;
     log(result.toString());
-    return Subscription.fromMapObject(result)!;
+    return Subscription.fromMapObject(result);
   }
 }
