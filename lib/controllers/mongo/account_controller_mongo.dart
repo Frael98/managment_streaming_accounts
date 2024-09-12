@@ -35,11 +35,11 @@ class AccountControllerMongo {
   /// Actualizar estado de cuenta
   static Future<String> updateStateAccount(ObjectId id, String state) async {
     final collection = await _getCollection();
-    var result = await collection!.updateOne(
-        where.eq('_id', id), modify.set('state', state));
+    var result = await collection!.updateOne(where.eq('_id', id),
+        modify.set('state', state).set('updated_at', DateTime.now()));
 
     if (result.isSuccess) {
-      return 'Cuenta agregada a subscripcion';
+      return 'Cuenta actualizada correctamente';
     }
     return 'Error no se pudo actualizar estado de cuenta ${result.errmsg}';
   }
