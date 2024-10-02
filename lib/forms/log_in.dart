@@ -43,13 +43,8 @@ class LogInState extends State<LogIn> {
   }
 
 //Muestra mensajes
-  void showToast(String action, [data = '', String message = '']) {
-    if (action == 'Iniciar Sesión') {
-      message += '$message $data';
-    }
-    if (action == 'Salir') {
-      message = 'Ha salido del sistema';
-    }
+  void showToast(String message,) {
+    
 
     Toast.show(message, duration: Toast.lengthLong, gravity: Toast.bottom);
   }
@@ -70,22 +65,23 @@ class LogInState extends State<LogIn> {
     var datos = await UserControllerMongo.logIn(User.validation(user, pass));
     var name = '', email = '';
 
-    if (datos != null) {
+    if (datos.success) {
       log(datos.toString());
-      await MySharedPreferences.prefs.setString('usuario', datos.name!);
-      await MySharedPreferences.prefs.setString('correo', datos.email!);
+      log('${datos.data}');
+      log('${datos.error}');
+      await MySharedPreferences.prefs.setString('usuario', datos.data!.user!);
+      await MySharedPreferences.prefs.setString('correo', datos.data!.email!);
+      await MySharedPreferences.prefs.setString('imagen', datos.data!.imagenId!.oid);
       MySharedPreferences.setIsLogged(true);
 
-      name = datos.name!;
-      email = datos.email!;
+      name = datos.data!.name!;
+      email = datos.data!.email!;
     } else {
-      showToast('action', '', 'Usuario no existe');
+      showToast(datos.error!);
       return;
     }
 
-    showToast(
-        'Iniciar Sesion',
-        ' Acceso concedido');
+    showToast('Acceso concedido');
     // ignore: use_build_context_synchronously
     /* Navigator.push(
         // ignore: use_build_context_synchronously

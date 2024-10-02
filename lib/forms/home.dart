@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
-import 'package:f_managment_stream_accounts/forms/components/custom_card.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_expansion_tile.dart';
 import 'package:f_managment_stream_accounts/models/client.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
@@ -31,9 +30,13 @@ class Home extends StatefulWidget {
 }
 
 class HomeScreen extends State<Home> {
+  mongo.ObjectId? _userImagenId;
+  Uint8List? _userImagen;
   Future<List<Client>>? _clients;
   Future<List<Platform>>? _platformsStream;
   final Connectivity _connectivity = Connectivity();
+
+  List<Menu> recientes = [];
 
   @override
   void initState() {
@@ -44,6 +47,7 @@ class HomeScreen extends State<Home> {
   }
 
   void _initData() {
+    _getUserImagen();
     _initClientsData();
     _initPlatformsData();
   }
@@ -99,6 +103,18 @@ class HomeScreen extends State<Home> {
     });
   }
 
+  void _getUserImagen() async {
+    var imagenIdString = MySharedPreferences.getSharedData('imagen');
+    if (imagenIdString.isEmpty) {
+      log('No hay imagen');
+    } else {
+      setState(() {
+        _userImagenId = mongo.ObjectId.fromHexString(imagenIdString);
+      });
+      _userImagen = await _getImageClient(_userImagenId);
+    }
+  }
+
   ///Chequeo de conexion a internet
   _checkConnection(BuildContext context) {
     _connectivity.onConnectivityChanged.listen(
@@ -143,9 +159,14 @@ class HomeScreen extends State<Home> {
               UserAccountsDrawerHeader(
                 accountName: Text(widget.usuario),
                 accountEmail: Text(widget.correo),
-                currentAccountPicture: const CircleAvatar(
-                  backgroundImage: AssetImage('assets/ichi.jpg'), // Imagen
-                ),
+                currentAccountPicture: isNotNull(_userImagen)
+                    ? CircleAvatar(
+                        backgroundImage: MemoryImage(_userImagen!), // Imagen
+                      )
+                    : const CircleAvatar(
+                        backgroundImage:
+                            AssetImage('assets/ichi.jpg'), // Imagen
+                      ),
                 decoration: const BoxDecoration(
                   color: Color.fromARGB(255, 17, 27, 54),
                 ),
@@ -193,107 +214,80 @@ class HomeScreen extends State<Home> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-        SizedBox(
-          height: 150,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: Colors.grey.withOpacity(0.2),
-                    width: 2.0,
+        (recientes.isEmpty)
+            ? SizedBox(
+                height: 100,
+                width: 100,
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: Colors.grey.withOpacity(0.2),
+                      width: 2.0,
+                    ),
                   ),
-                ),
-                elevation: 8,
-                //color: Colors.red,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {},
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color.fromARGB(255, 6, 14, 20).withOpacity(0.8),
-                          const Color.fromARGB(255, 5, 32, 54).withOpacity(0.8),
-                          const Color.fromARGB(255, 201, 52, 52)
-                              .withOpacity(0.8)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        //stops: [0.0, 1.0],
-                        //tileMode: TileMode.clamp,
+                  elevation: 8,
+                  //color: Colors.transparent, // Hacemos el color del Card transparente
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {},
+                    child: Container(
+                      width: 150,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.3),
+                              Colors.black.withOpacity(0.2),
+                              Colors.grey.withOpacity(0.3)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight),
                       ),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text("Hola como estas"),
-                    ),
-                  ),
-                ),
-              ),
-              Card(
-                elevation: 8,
-                color: Colors.red,
-                child: InkWell(
-                  child: const Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text("Hola como estas"),
-                  ),
-                  onTap: () {},
-                ),
-              ),
-              Card(
-                elevation: 8,
-                color: Colors.grey.withOpacity(0.2),
-                child: InkWell(
-                  child: const Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text("Hola como estas"),
-                  ),
-                  onTap: () {},
-                ),
-              ),
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: Colors.grey.withOpacity(0.2),
-                    width: 2.0,
-                  ),
-                ),
-                elevation: 8,
-                //color: Colors.transparent, // Hacemos el color del Card transparente
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {},
-                  child: Container(
-                    width: 150,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: LinearGradient(colors: [
-                        Colors.white.withOpacity(0.3),
-                        Colors.black.withOpacity(0.2),
-                        Colors.grey.withOpacity(0.3)
-                      ], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Center(
-                        child: Icon(
-                          Icons.add,
-                          size: 50,
+                      child: const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Center(
+                          child: Icon(
+                            Icons.add,
+                            size: 50,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
+              )
+            : SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recientes.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: Colors.grey.withOpacity(0.2),
+                          width: 2.0,
+                        ),
+                      ),
+                      color: Colors.grey.withOpacity(0.2),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Center(
+                            child: Text(recientes[index].nombre),
+                          ),
+                        ),
+                        onTap: () {
+                          context.goNamed(recientes[index].ruta);
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
-            ],
-          ),
-        )
       ],
     );
   }
@@ -353,13 +347,6 @@ class HomeScreen extends State<Home> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(20),
                               onTap: () {
-                                /*  Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ClientFormScreen(client.uid),
-                                  ),
-                                ); */
                                 context.pushNamed('form-clientes',
                                     queryParameters: {
                                       'uid': client.uid!.oid
@@ -371,9 +358,12 @@ class HomeScreen extends State<Home> {
                               },
                               child: Container(
                                 decoration: BoxDecoration(
-                                    //border: Border.all(),
-                                    color: Colors.white30,
-                                    borderRadius: BorderRadius.circular(20)),
+                                  //border: Border.all(),
+                                  //color: Colors.white30.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: Colors.grey.withOpacity(0.2)),
+                                ),
                                 //margin: EdgeInsets.all(5),
                                 padding: const EdgeInsets.all(15),
                                 child: Column(
@@ -416,60 +406,70 @@ class HomeScreen extends State<Home> {
   /// Seccion de plataformas
   Widget _platformsSection(BuildContext conetext) {
     return FutureBuilder(
-        //stream: PlatformControllerMongo.getPlatforms().asStream(),
-        future: _platformsStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Padding(
-              padding: EdgeInsets.all(100),
+      //stream: PlatformControllerMongo.getPlatforms().asStream(),
+      future: _platformsStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(100),
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          log('Error en stream _platformsSection ${snapshot.error}');
+          return Center(
+            child: Text('${snapshot.error}'),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Padding(
+              padding: EdgeInsets.all(50),
               child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            log('Error en stream clientSection ${snapshot.error}');
-            return Center(
-              child: Text('${snapshot.error}'),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Padding(
-                padding: EdgeInsets.all(50),
-                child: Center(
-                  child: Text('No hay datos disponibles'),
-                ));
-          } else {
-            List<Platform>? platforms = snapshot.data;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                  child: Text(
-                    'Plataformas',
-                    textAlign: TextAlign.start,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+                child: Text('No hay datos disponibles'),
+              ));
+        } else {
+          List<Platform>? platforms = snapshot.data;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: Text(
+                  'Plataformas',
+                  textAlign: TextAlign.start,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(
-                  height: 150,
-                  child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: platforms!.length,
-                      itemBuilder: (context, index) {
-                        Platform platform = platforms[index];
+              ),
+              SizedBox(
+                height: 80,
+                child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: platforms!.length,
+                    itemBuilder: (context, index) {
+                      Platform platform = platforms[index];
 
-                        return CustomCard(
-                          cardName: platform.namePlatform!,
-                          //function: () =>onPlatformForm(idPlatform: platform.uid, context),
-                          color: colorsLinear[
-                              math.Random().nextInt(colorsLinear.length)],
-                        );
-                      }),
-                )
-              ],
-            );
-          }
-        });
+                      return Container(
+                        padding: const EdgeInsets.all(4),
+                        width: 80,
+                        //height: 60, // Define un ancho para el contenedor
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 4), // Espaciado horizontal
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: colorsLinear[math.Random().nextInt(colorsLinear.length)]
+                        ),
+                        child: Center(
+                          child: Text(platform.namePlatform!, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700),),
+                        ),
+                      );
+                    }),
+              )
+            ],
+          );
+        }
+      },
+    );
   }
 
   ///Menus del home
@@ -478,7 +478,7 @@ class HomeScreen extends State<Home> {
       CustomExpansionTile(title: 'Acciones', tiles: _submenus(context)),
       ListTile(
         leading: const Icon(Icons.logout),
-        title: const Text('Cerrar sesión'),
+        title: const Text(Menu.LOG_OUT),
         onTap: () {
           if (MySharedPreferences.getIsLogged()) {
             MySharedPreferences.setIsLogged(false);
@@ -496,60 +496,41 @@ class HomeScreen extends State<Home> {
     return [
       ListTile(
         leading: const Icon(Icons.contact_mail),
-        title: const Text('Clientes'),
+        title: const Text(Menu.CLIENTS),
         onTap: () {
-          /* Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ClientListView(),
-            ),
-          ); */
           //context.goNamed(RutasNombres.clientes.name);
           //Direcciona a lista de clientes y recargamos los datos
           context.pushNamed(RutasNombres.clientes.name).then((n) {
             setState(() {
               _initData();
             });
+            recientes.add(Menu(Menu.CLIENTS, RutasNombres.clientes.name));
           });
         },
       ),
       ListTile(
         leading: const Icon(Icons.account_box_rounded),
-        title: const Text('Cuentas'),
+        title: const Text(Menu.ACCOUNTS),
         onTap: () {
-          /* Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AccountListView(),
-            ),
-          ); */
           context.goNamed(RutasNombres.cuentas.name);
+          recientes.add(Menu(Menu.ACCOUNTS, RutasNombres.cuentas.name));
         },
       ),
       ListTile(
         leading: const Icon(Icons.shop_rounded),
-        title: const Text('Suscripciones'),
+        title: const Text(Menu.SUBSCRIPTIONS),
         onTap: () {
-          /* Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const SubscriptionListView(),
-            ),
-          ); */
           context.goNamed(RutasNombres.susbscripcion.name);
+          recientes
+              .add(Menu(Menu.SUBSCRIPTIONS, RutasNombres.susbscripcion.name));
         },
       ),
       ListTile(
         leading: const Icon(Icons.dvr),
-        title: const Text('Plataformas'),
+        title: const Text(Menu.PLATFORMS),
         onTap: () {
-          /* Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const PlatformListView(),
-            ),
-          ); */
           context.goNamed(RutasNombres.platformas.name);
+          recientes.add(Menu(Menu.PLATFORMS, RutasNombres.platformas.name));
         },
       ),
     ];

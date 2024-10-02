@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
@@ -8,7 +10,8 @@ import 'package:f_managment_stream_accounts/shared_preferences/preferences.dart'
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:image_picker/image_picker.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
 import '../controllers/mongo/user_controller_mongo.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -20,13 +23,16 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  GlobalKey<FormState> _key = GlobalKey();
+  final GlobalKey<FormState> _key = GlobalKey();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
+  File? _image;
+  Uint8List? _imagenAlmacenada;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +41,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
           title: const Text('Registro de Usuario'),
         ),
         body: buildFormRegister());
+  }
+
+  Widget displayImage() {
+    if (_image != null) {
+      return ClipRRect(
+          borderRadius: BorderRadius.circular(10.0),
+          child: Image.file(
+            _image!,
+            height: 200,
+            width: 200,
+            fit: BoxFit.cover,
+          ));
+    } else if (_imagenAlmacenada != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.memory(
+          _imagenAlmacenada!,
+          height: 200,
+          width: 200,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      return Container(
+        height: 200,
+        width: 200,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: Colors.grey[200],
+        ),
+        child: Icon(
+          Icons.camera_alt,
+          size: 64.0,
+          color: Colors.grey[800],
+        ),
+      );
+    }
   }
 
   Widget buildFormRegister() {
@@ -47,6 +90,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Card(
+                    elevation: 4.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: displayImage(),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _escogerImagen,
+                    icon: const Icon(Icons.image),
+                    label: const Text('Seleccionar Imagen'),
+                  ),
                   CustomTextFormField(
                     labelText: 'Nombres',
                     controller: _firstNameController,
@@ -119,16 +174,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
+    mongo.ObjectId? imagenId;
+    if (_image != null) {
+      imagenId = await UserControllerMongo.saveImageUser(_image!);
+      log(imagenId.oid);
+    }
+
     User newUser = User(
         name: name,
         lastname: lastname,
         user: user,
         email: email,
         age: age,
-        password: password);
+        password: password,
+        imagenId: imagenId,
+        createdAt: DateTime.now());
 
     try {
       //await UserControllerSQLite.addUser(newUser);
+      log(newUser.toString());
       await UserControllerMongo.addUser(newUser);
 
       limpiarTexts();
@@ -141,14 +205,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
         MaterialPageRoute(
             builder: (context) => const LogIn()),
       ); */
-      // ignore: use_build_context_synchronously
       MySharedPreferences.setIsLogged(true);
       MySharedPreferences.prefs.setString('usuario', user);
       MySharedPreferences.prefs.setString('correo', email);
+      // ignore: use_build_context_synchronously
       context.goNamed(RutasNombres.login.name);
     } catch (e) {
       log('Error al registrar al usuario: $e');
       showToast('Error al registrar al usuario: $e');
     }
+  }
+
+  void _escogerImagen() async {
+    final img = await _imagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (img != null) {
+        log(img.path);
+        _image = File(img.path);
+      } else {
+        log('No selecciono ninguna imagen');
+      }
+    });
   }
 }
