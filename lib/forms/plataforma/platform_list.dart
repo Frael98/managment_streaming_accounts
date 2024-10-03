@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_card.dart';
-import 'package:f_managment_stream_accounts/forms/plataforma/platform_form.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:f_managment_stream_accounts/utils/constantes.dart';
 import 'package:flutter/material.dart';
@@ -22,11 +21,11 @@ class _PlatformListViewState extends State<PlatformListView> {
 
   @override
   void initState() {
-    initializePlatforms();
+    _initializePlatforms();
     super.initState();
   }
 
-  Future initializePlatforms() async {
+  Future _initializePlatforms() async {
     try {
       var plataformasCargadas = await PlatformControllerMongo.getPlatforms();
       setState(() {
@@ -60,12 +59,14 @@ class _PlatformListViewState extends State<PlatformListView> {
               : getBuildTilePlatform(context, platforms!),
       floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.push(
+            /* Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => PlatformFormScreen(),
               ),
-            );
+            ); */
+            context.goNamed('form-plataformas',
+                queryParameters: {'idPlatform': 0});
           },
           backgroundColor: Colors.green,
           child: const Icon(Icons.add)),
@@ -84,7 +85,7 @@ class _PlatformListViewState extends State<PlatformListView> {
 
           return CustomCard(
             cardName: platform.namePlatform!,
-            function: () => onPlatformForm(idPlatform: platform.uid, context),
+            function: () => _onPlatformForm(idPlatform: platform.uid, context),
             color: colorsLinear[math.Random().nextInt(colorsLinear.length)],
           );
         },
@@ -93,7 +94,7 @@ class _PlatformListViewState extends State<PlatformListView> {
   }
 
   /// Abrir el formulario para actualizar o agregar cliente
-  static void onPlatformForm(BuildContext context, {dynamic idPlatform}) {
+  void _onPlatformForm(BuildContext context, {dynamic idPlatform}) {
     /* Navigator.push(
       context,
       MaterialPageRoute(
@@ -102,6 +103,13 @@ class _PlatformListViewState extends State<PlatformListView> {
         ),
       ),
     ); */
-    context.goNamed('form-plataformas',queryParameters: {'idPlatform': idPlatform});
+    context.pushNamed('form-plataformas',
+        queryParameters: {'idPlatform': idPlatform.oid})
+      .then((n) {
+        setState(() {
+          _initializePlatforms();
+        });
+      });
+    ;
   }
 } // End class

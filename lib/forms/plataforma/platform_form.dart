@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:f_managment_stream_accounts/controllers/mongo/platforms_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_elevated_button.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
-//import 'package:f_managment_stream_accounts/forms/plataforma/platform_list.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
 import 'package:flutter/material.dart';
@@ -42,12 +41,13 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
   }
 
   Future<void> _obtenerPlatformAsync() async {
-    if (widget.idPlatform != 0) {
+    if (isNotNull(widget.idPlatform) && widget.idPlatform != 0) {
       Platform? plataforma =
           await PlatformControllerMongo.getPlatform(widget.idPlatform);
       log(plataforma.toString());
       setState(() {
-        _idPlatform = plataforma.id ?? plataforma.uid;
+        _idPlatform = plataforma.uid;
+        //_idPlatform = plataforma.id ?? plataforma.uid;
       });
       _platformNameController.text = plataforma.namePlatform!;
       _descriptionController.text = plataforma.description!;
@@ -64,7 +64,7 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_key.currentState!.validate()) {
-            if (_idPlatform != 0) {
+            if (_idPlatform != 0 && isNotNull(_idPlatform)) {
               _updatePlatform(context);
             } else {
               _registerPlatform(context);
@@ -105,10 +105,11 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
                 title: "Eliminar",
                 //isIcon: true,
                 function: () async {
-                  await Future.delayed(const Duration(seconds: 2), () {
+                  /* await Future.delayed(const Duration(seconds: 2), () {
                     // Código para ejecutar después de 2 segundos
                     log('¡Esta línea se imprimirá después de 10 segundos!');
-                  });
+                  }); */
+                 showDialogMessage(context, title: 'Eliminar plataforma', callbackYes:  _deletePlatform);
                 }),
           ),
         ],
@@ -173,14 +174,22 @@ class _PlatformFormScreenState extends State<PlatformFormScreen>
   }
 
   /// Eliminar plataforma
-  void _deletePlatform(BuildContext context) async {
+  void _deletePlatform() async {
     try {
-      var message =
-          await PlatformControllerMongo.deletePlatform(widget.idPlatform);
-      if (!message.toLowerCase().contains("error")) {
-        _goToPlatformList();
+      var message = await PlatformControllerMongo.deletePlatform(_idPlatform);
+
+      log(message);
+
+      if (message.toLowerCase().contains("error")) {
+        return;
       }
-      showToast(message);
+      //showToast(message);
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(message),
+      ));
+
+      _goToPlatformList();
     } catch (e) {
       log('Error en eliminacion de plataforma $e');
     }
