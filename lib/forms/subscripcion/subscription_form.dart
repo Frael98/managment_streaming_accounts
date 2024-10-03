@@ -1,6 +1,8 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:f_managment_stream_accounts/controllers/mongo/account_controller_mongo.dart';
+import 'package:f_managment_stream_accounts/controllers/mongo/client_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/controllers/mongo/subscription_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_account_card.dart';
 import 'package:f_managment_stream_accounts/forms/components/custom_textfield.dart';
@@ -159,11 +161,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                       }
                     },
                   ))
-              : /* Container(
-                  margin: const EdgeInsets.all(15),
-                  child: const Text('Agregue una cuenta', style: TextStyle(fontSize: 20),),
-                ) */
-              const Card(
+              : const Card(
                   elevation: 4,
                   child: Padding(
                     padding: EdgeInsets.all(15),
@@ -202,12 +200,16 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                       },
                       child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 30,
-                            child: Text(
-                              client.nameClient!.substring(0, 1),
-                            ),
-                          ),
+                          isNotNull(client.imagen!)
+                              ? FutureBuilder(
+                                  future: _getImageClient(client.imagen),
+                                  builder: _builderImage)
+                              : CircleAvatar(
+                                  radius: 30,
+                                  child: Text(
+                                    client.nameClient!.substring(0, 1),
+                                  ),
+                                ),
                           const SizedBox(
                             height: 5,
                           ),
@@ -386,14 +388,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           await SubscriptionControllerMongo.updateSubscription(_subscription!);
 
       if (!message.contains('error')) {
-
         String state = "parcialmente disponible";
-          if (_clients.length == _accountCapacity) state = "ocupado";
+        if (_clients.length == _accountCapacity) state = "ocupado";
 
-          var message2 = await AccountControllerMongo.updateStateAccount(
-              _account!.uid!, state);
+        var message2 = await AccountControllerMongo.updateStateAccount(
+            _account!.uid!, state);
 
-          log(message2);
+        log(message2);
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(message),
@@ -404,6 +405,28 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       }
     } catch (e) {
       log("Error en actualizacion $e");
+    }
+  }
+
+  /// Obtener imagen de cliente
+  Future<Uint8List> _getImageClient(mongo.ObjectId? idImage) async {
+    Uint8List? imgList = await ClientControllerMongo.getClientImage(idImage!);
+    return imgList!;
+  }
+
+  /// Construir imagen de cliente
+  Widget _builderImage(BuildContext context, AsyncSnapshot snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CircularProgressIndicator();
+    } else {
+      Uint8List imageData = snapshot.data as Uint8List;
+      // Convert Uint8List to MemoryImage
+      ImageProvider<Object> imageProvider = MemoryImage(imageData);
+
+      return CircleAvatar(
+        radius: 30,
+        backgroundImage: imageProvider,
+      );
     }
   }
 }
