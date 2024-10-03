@@ -203,4 +203,16 @@ class AccountControllerMongo {
         .where((a) => !subscriptionAccountsId.contains(a.uid!.oid))
         .toList(); */
   }
+
+  static Future<int> accountWithPlatformQuantity(ObjectId platformId) async {
+    final accountCollection = await _getCollection();
+
+    final count = accountCollection!.find({'platform': platformId});
+
+    if(await count.isEmpty){
+      return 0;
+    }
+
+    return 1;
+  }
 }

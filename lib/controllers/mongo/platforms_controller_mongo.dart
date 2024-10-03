@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:f_managment_stream_accounts/controllers/mongo/account_controller_mongo.dart';
 import 'package:f_managment_stream_accounts/db/mongo/mongo_db.dart';
 import 'package:f_managment_stream_accounts/models/platform.dart';
 import 'package:mongo_dart/mongo_dart.dart';
@@ -62,6 +63,13 @@ class PlatformControllerMongo {
 
   static Future<String> deletePlatform(ObjectId uid) async {
     final platformCollection = await _getCollection();
+
+    final count = await AccountControllerMongo.accountWithPlatformQuantity(uid);
+
+    if (count > 0) {
+      return "Plataforma asociada a una cuenta, no es posible eliminar";
+    }
+
     var result = await platformCollection!.deleteOne({'_id': uid});
 
     if (result.isSuccess) {
