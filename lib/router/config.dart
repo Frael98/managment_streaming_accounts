@@ -12,6 +12,7 @@ import 'package:f_managment_stream_accounts/forms/subscripcion/subscription_list
 import 'package:f_managment_stream_accounts/router/rutas.dart';
 import 'package:f_managment_stream_accounts/shared_preferences/preferences.dart';
 import 'package:f_managment_stream_accounts/utils/helpful_functions.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
@@ -50,8 +51,15 @@ final routes = <RouteBase>[
             },
             routes: [
               GoRoute(
-                  path: 'form-cuentas',
-                  builder: (context, state) => const AccountFormScreen())
+                path: 'form-cuentas',
+                pageBuilder: (context, state) => CustomTransitionPage(
+                  child: const AccountFormScreen(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return _buildPageTransition(animation, child);
+                  },
+                ),
+              )
             ]),
         GoRoute(
             path: RutasNombres.clientes.path,
@@ -69,8 +77,7 @@ final routes = <RouteBase>[
                   name: 'form-clientes',
                   builder: (context, state) {
                     final idClient = isNotNull(state.uri.queryParameters['uid'])
-                        ? ObjectId.parse(
-                            state.uri.queryParameters['uid']!)
+                        ? ObjectId.parse(state.uri.queryParameters['uid']!)
                         : 0;
                     return ClientFormScreen(idClient);
                   })
@@ -85,7 +92,10 @@ final routes = <RouteBase>[
                   name: 'form-plataformas',
                   builder: (context, state) {
                     final idPlatform =
-                        state.uri.queryParameters['idPlatform'] ?? 'false';
+                        isNotNull(state.uri.queryParameters['idPlatform'])
+                            ? ObjectId.parse(
+                                state.uri.queryParameters['idPlatform']!)
+                            : null;
                     return PlatformFormScreen(
                       idPlatform: idPlatform,
                     );
@@ -113,8 +123,18 @@ final routes = <RouteBase>[
       ]),
 ];
 
-/* if(MySharedPreferences.getIsLogged()){
-  
-} */
+Widget _buildPageTransition(Animation<double> animation, Widget child) {
+  const begin = Offset(1.0, 0.0); // Comienza desde la derecha
+  const end = Offset.zero; // Termina en el centro
+  const curve = Curves.easeInOut; // Curva de animación
+
+  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+  var offsetAnimation = animation.drive(tween);
+
+  return SlideTransition(
+    position: offsetAnimation,
+    child: child,
+  );
+}
 
 final enrutador = GoRouter(routes: routes, initialLocation: '/');
