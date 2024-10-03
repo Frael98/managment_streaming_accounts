@@ -2,7 +2,7 @@
 import 'package:f_managment_stream_accounts/router/config.dart';
 import 'package:f_managment_stream_accounts/shared_preferences/preferences.dart';
 import 'package:flutter/material.dart';
-//import 'package:go_router/go_router.dart';
+import 'package:toast/toast.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    ToastContext().init(context);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Sistema Gestor de Cuentas Streaming',

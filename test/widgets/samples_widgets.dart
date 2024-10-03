@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 Widget cardsVistaHorizontal() {
-  return const Padding(
+  return Padding(
     padding: EdgeInsets.all(20), //
     child: SingleChildScrollView(
       scrollDirection:
@@ -19,19 +19,40 @@ Widget cardsVistaHorizontal() {
                 ),
               )),
           Card(
-            color: Colors.blue,
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text("Hola como estas"),
-            ),
-          ),
-          Card(
-            color: Colors.red,
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text("Hola como estas"),
-            ),
-          ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: Colors.grey.withOpacity(0.2),
+                    width: 2.0,
+                  ),
+                ),
+                elevation: 8,
+                //color: Colors.transparent, // Hacemos el color del Card transparente
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {},
+                  child: Container(
+                    width: 150,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(colors: [
+                        Colors.white.withOpacity(0.3),
+                        Colors.black.withOpacity(0.2),
+                        Colors.grey.withOpacity(0.3)
+                      ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Center(
+                        child: Icon(
+                          Icons.add,
+                          size: 50,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
         ],
       ),
     ),
