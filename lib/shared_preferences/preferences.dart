@@ -16,6 +16,10 @@ class MySharedPreferences {
     return false;
   }
 
+  static String getSharedData(String key){
+    return prefs.getString(key) ?? "";
+  }
+
   static setIsLogged(bool value) {
     prefs.setBool(LOGGED, value);
   }
