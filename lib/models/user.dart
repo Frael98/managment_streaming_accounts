@@ -3,6 +3,7 @@ import 'package:f_managment_stream_accounts/interfaces/entity.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 class User extends Entity {
+  ObjectId? imagenId;
   String? name;
   String? lastname;
   String? user;
@@ -13,6 +14,7 @@ class User extends Entity {
   User({
     ObjectId? uid,
     int? id,
+    this.imagenId,
     required this.name,
     required this.lastname,
     required this.user,
@@ -44,6 +46,7 @@ class User extends Entity {
       'age': age,
       'email': email,
       'password': password,
+      'imagen_id': imagenId,
       'state': state,
       'created_at': createdAt,
       'updated_at': updatedAt,
@@ -60,7 +63,9 @@ class User extends Entity {
         user: map['USER'] ?? map['user'],
         email: map['EMAIL'] ?? map['email'],
         age: map['AGE'] ?? map['age'],
-        password: map['PASSWORD'] ?? map['password']);
+        password: map['PASSWORD'] ?? map['password'],
+        imagenId: map['IMAGEN_ID'] ?? map['imagen_id']
+        );
   }
 
   factory User.fromMapAudit(Map<String, dynamic> map) {
@@ -84,7 +89,7 @@ class User extends Entity {
   // each User when using the print statement.
   @override
   String toString() {
-    return 'User {id: $id name: $name, user: $user, lastname: $lastname, email: $email, password: $password, created_at: $createdAt}';
+    return 'User {id: $id name: $name, user: $user, lastname: $lastname, email: $email, password: $password, created_at: $createdAt, imagen_id: ${imagenId!.oid}}';
   }
 
   @override
